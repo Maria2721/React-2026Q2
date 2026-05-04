@@ -1,9 +1,35 @@
 import { Component } from 'react';
+import type { SearchState } from './ts/interfaces';
 import { Header } from './components/Header';
 import { SearchSection } from './components/SearchSection';
 import { ResultsSection } from './components/ResultsSection';
 
-export default class App extends Component {
+export default class App extends Component<object, SearchState> {
+  state: SearchState = {
+    value: '',
+  };
+
+  componentDidMount() {
+    const saved = localStorage.getItem('search');
+
+    if (saved) {
+      this.setState({ value: saved });
+    }
+  }
+
+  handleChange = (value: string) => {
+    this.setState({ value });
+  };
+
+  handleSearch = () => {
+    const trimmed = this.state.value.trim();
+    const saved = localStorage.getItem('search');
+
+    if (trimmed === saved) return;
+
+    localStorage.setItem('search', trimmed);
+  };
+
   render() {
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex justify-center p-8">
@@ -11,7 +37,11 @@ export default class App extends Component {
           <Header />
 
           <main className="flex flex-col gap-6">
-            <SearchSection />
+            <SearchSection
+              value={this.state.value}
+              onChange={this.handleChange}
+              onSearch={this.handleSearch}
+            />
             <ResultsSection />
           </main>
         </div>
