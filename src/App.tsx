@@ -12,6 +12,7 @@ export default class App extends Component<object, AppState> {
     results: [],
     loading: false,
     error: null,
+    crash: false,
   };
 
   componentDidMount() {
@@ -63,6 +64,10 @@ export default class App extends Component<object, AppState> {
   render() {
     const { query, results, loading, error } = this.state;
 
+    if (this.state.crash) {
+      throw new Error('Test error');
+    }
+
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex justify-center p-8">
         <div className="w-full max-w-3xl flex flex-col gap-8">
@@ -74,7 +79,17 @@ export default class App extends Component<object, AppState> {
               onChange={this.handleChange}
               onSearch={this.handleSearch}
             />
+
             <ResultsSection results={results} loading={loading} error={error} />
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => this.setState({ crash: true })}
+                className="px-5 py-2 rounded-xl font-medium text-white transition bg-linear-to-r from-purple-400 to-pink-400 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.95]"
+              >
+                Test Error
+              </button>
+            </div>
           </main>
         </div>
       </div>

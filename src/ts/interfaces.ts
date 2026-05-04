@@ -24,6 +24,7 @@ interface AppState {
   results: Character[];
   loading: boolean;
   error: string | null;
+  crash: boolean;
 }
 
 interface ResultsProps {
