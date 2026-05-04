@@ -1,7 +1,3 @@
-interface SearchState {
-  value: string;
-}
-
 interface SearchProps {
   value: string;
   onChange: (value: string) => void;
@@ -12,4 +8,40 @@ interface PressedState {
   isPressed: boolean;
 }
 
-export type { SearchState, SearchProps, PressedState };
+interface Character {
+  id: number;
+  name: string;
+  status: string;
+  species: string;
+  gender: string;
+  origin: { name: '' };
+  location: { name: '' };
+  episode: [];
+}
+
+interface AppState {
+  query: string;
+  results: Character[];
+  loading: boolean;
+  error: string | null;
+}
+
+interface ResultsProps {
+  results: Character[];
+  loading: boolean;
+  error: string | null;
+}
+
+interface ApiResponse {
+  results?: Character[];
+  error?: string;
+}
+
+export type {
+  SearchProps,
+  PressedState,
+  AppState,
+  ResultsProps,
+  Character,
+  ApiResponse,
+};
