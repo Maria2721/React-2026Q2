@@ -20,10 +20,9 @@ export class Search extends Component<SearchProps, PressedState> {
     }, 150);
   };
 
-  handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      this.triggerSearch();
-    }
+  handleSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+    e.preventDefault();
+    this.triggerSearch();
   };
 
   render() {
@@ -31,7 +30,8 @@ export class Search extends Component<SearchProps, PressedState> {
     const { isPressed } = this.state;
 
     return (
-      <div
+      <form
+        onSubmit={this.handleSubmit}
         className="
           flex items-center gap-3 p-2 rounded-2xl border border-gray-800
           bg-white shadow-sm transition
@@ -40,9 +40,9 @@ export class Search extends Component<SearchProps, PressedState> {
         "
       >
         <input
+          type="text"
           value={value}
           onChange={this.handleChange}
-          onKeyDown={this.handleKeyDown}
           placeholder="Search anything..."
           className="
             flex-1 bg-transparent px-3 py-2
@@ -52,7 +52,7 @@ export class Search extends Component<SearchProps, PressedState> {
         />
 
         <button
-          onClick={this.triggerSearch}
+          type="submit"
           className={`
             px-5 py-2 rounded-xl font-medium text-white transition
             bg-linear-to-r from-blue-500 to-indigo-500
@@ -63,7 +63,7 @@ export class Search extends Component<SearchProps, PressedState> {
         >
           Search
         </button>
-      </div>
+      </form>
     );
   }
 }
