@@ -8,6 +8,10 @@ export const fetchCharacters = async (query: string): Promise<Character[]> => {
   const res = await fetch(url);
   const data: ApiResponse = await res.json();
 
+  if (res.status === 404) {
+    return [];
+  }
+
   if (!res.ok) {
     throw new Error(data.error ?? `HTTP error ${res.status}`);
   }
