@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import type { SearchProps, PressedState } from '../ts/interfaces';
+import type { SearchProps, PressedState } from '../../ts/interfaces';
 
 export class Search extends Component<SearchProps, PressedState> {
   state: PressedState = {
@@ -31,6 +31,7 @@ export class Search extends Component<SearchProps, PressedState> {
 
     return (
       <form
+        data-testid="search-form"
         onSubmit={this.handleSubmit}
         className="
           flex items-center gap-3 p-2 rounded-2xl border border-gray-800
@@ -52,6 +53,7 @@ export class Search extends Component<SearchProps, PressedState> {
         />
 
         <button
+          aria-pressed={isPressed}
           type="submit"
           className={`
             px-5 py-2 rounded-xl font-medium text-white transition

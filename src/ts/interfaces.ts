@@ -14,9 +14,13 @@ interface Character {
   status: string;
   species: string;
   gender: string;
-  origin: { name: '' };
-  location: { name: '' };
-  episode: [];
+  origin: {
+    name: string;
+  };
+  location: {
+    name: string;
+  };
+  episode: string[];
 }
 
 interface AppState {

@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import type { AppState } from './ts/interfaces';
-import { Header } from './components/Header';
-import { SearchSection } from './components/SearchSection';
-import { ResultsSection } from './components/ResultsSection';
+import { Header } from './components/Header/Header';
+import { SearchSection } from './components/SearchSection/SearchSection';
+import { ResultsSection } from './components/ResultsSection/ResultsSection';
 import { fetchCharacters } from './api/characters';
 import { storage } from './utils/storage';
 
@@ -16,7 +16,7 @@ export default class App extends Component<object, AppState> {
   };
 
   componentDidMount() {
-    const saved = storage.getSearch();
+    const saved = storage.getSearch() ?? '';
 
     this.setState({ query: saved }, () => {
       this.fetchData();

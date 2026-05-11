@@ -1,6 +1,6 @@
 import { Component } from 'react';
-import type { ResultsProps } from '../ts/interfaces';
-import { CharacterCard } from './CharacterCard';
+import type { ResultsProps } from '../../ts/interfaces';
+import { CharacterCard } from '../CharacterCard/CharacterCard';
 
 export class ResultsSection extends Component<ResultsProps> {
   render() {
@@ -12,7 +12,10 @@ export class ResultsSection extends Component<ResultsProps> {
 
         {loading && (
           <div className="flex justify-center py-6">
-            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div
+              data-testid="loader"
+              className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+            ></div>
           </div>
         )}
 
