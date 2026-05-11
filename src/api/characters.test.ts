@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchCharacters } from './characters';
-import { mockCharacter } from '../test-utils/mocks';
+import { mockCharacters } from '../test-utils/mocks';
 
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
@@ -15,14 +15,14 @@ describe('fetchCharacters', () => {
       ok: true,
       status: 200,
       json: async () => ({
-        results: [mockCharacter],
+        results: mockCharacters,
       }),
     });
 
     const result = await fetchCharacters('Rick');
 
     expect(mockFetch).toHaveBeenCalled();
-    expect(result).toEqual([mockCharacter]);
+    expect(result).toEqual(mockCharacters);
   });
 
   it('returns empty array on 404', async () => {
