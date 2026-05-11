@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import type { Character } from '../ts/interfaces';
+import type { Character } from '../../ts/interfaces';
 
 export class CharacterCard extends Component<Character> {
   render() {

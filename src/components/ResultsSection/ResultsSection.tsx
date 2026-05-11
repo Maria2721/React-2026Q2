@@ -1,6 +1,6 @@
 import { Component } from 'react';
-import type { ResultsProps } from '../ts/interfaces';
-import { CharacterCard } from './CharacterCard';
+import type { ResultsProps } from '../../ts/interfaces';
+import { CharacterCard } from '../CharacterCard/CharacterCard';
 
 export class ResultsSection extends Component<ResultsProps> {
   render() {

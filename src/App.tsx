@@ -2,7 +2,7 @@ import { Component } from 'react';
 import type { AppState } from './ts/interfaces';
 import { Header } from './components/Header';
 import { SearchSection } from './components/SearchSection/SearchSection';
-import { ResultsSection } from './components/ResultsSection';
+import { ResultsSection } from './components/ResultsSection/ResultsSection';
 import { fetchCharacters } from './api/characters';
 import { storage } from './utils/storage';
 
