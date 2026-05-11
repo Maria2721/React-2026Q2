@@ -1,6 +1,6 @@
 import { Component } from 'react';
-import type { SearchProps } from '../ts/interfaces';
-import { Search } from './Search';
+import type { SearchProps } from '../../ts/interfaces';
+import { Search } from '../Search/Search';
 
 export class SearchSection extends Component<SearchProps> {
   render() {
