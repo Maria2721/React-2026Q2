@@ -16,7 +16,7 @@ export default class App extends Component<object, AppState> {
   };
 
   componentDidMount() {
-    const saved = storage.getSearch();
+    const saved = storage.getSearch() ?? '';
 
     this.setState({ query: saved }, () => {
       this.fetchData();

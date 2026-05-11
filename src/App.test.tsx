@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 
@@ -46,14 +46,16 @@ describe('App', () => {
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
   });
 
-  it('reads search from localStorage on mount', () => {
+  it('reads search from localStorage on mount', async () => {
     mockedStorage.getSearch.mockReturnValue('Morty');
 
     mockedFetchCharacters.mockResolvedValue([]);
 
     render(<App />);
 
-    expect(mockedStorage.getSearch).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockedStorage.getSearch).toHaveBeenCalled();
+    });
   });
 
   it('handles search flow (input + click + fetch)', async () => {
