@@ -2,7 +2,7 @@ import { CharacterCard } from '../CharacterCard/CharacterCard';
 
 import type { ResultsProps } from '../../ts/interfaces';
 
-export const ResultsSection = ({ results, loading, error }: ResultsProps) => {
+export function ResultsSection({ results, loading, error }: ResultsProps) {
   const isEmpty = !loading && !error && results.length === 0;
   const hasResults = !loading && !error && results.length > 0;
 
@@ -38,4 +38,4 @@ export const ResultsSection = ({ results, loading, error }: ResultsProps) => {
       )}
     </section>
   );
-};
+}
