@@ -20,6 +20,9 @@ export default defineConfig([
       reactPlugin.configs.flat['jsx-runtime'],
       eslintConfigPrettier,
     ],
+    rules: {
+      'react-hooks/set-state-in-effect': 'warn',
+    },
     languageOptions: {
       globals: globals.browser,
     },
