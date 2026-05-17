@@ -4,10 +4,6 @@ interface SearchProps {
   onSearch: () => void;
 }
 
-interface PressedState {
-  isPressed: boolean;
-}
-
 interface Character {
   id: number;
   name: string;
@@ -42,11 +38,4 @@ interface ApiResponse {
   error?: string;
 }
 
-export type {
-  SearchProps,
-  PressedState,
-  AppState,
-  ResultsProps,
-  Character,
-  ApiResponse,
-};
+export type { SearchProps, AppState, ResultsProps, Character, ApiResponse };
