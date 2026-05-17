@@ -4,26 +4,29 @@ import userEvent from '@testing-library/user-event';
 
 import App from './App';
 import { fetchCharacters } from './api/characters';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { mockCharacters } from './test-utils/mocks';
-import { storage } from './utils/storage';
 
 vi.mock('./api/characters', () => ({
   fetchCharacters: vi.fn(),
 }));
-vi.mock('./utils/storage', () => ({
-  storage: {
-    getSearch: vi.fn(),
-    setSearch: vi.fn(),
-  },
+
+vi.mock('./hooks/useLocalStorage', () => ({
+  useLocalStorage: vi.fn(),
 }));
 
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
-const mockedStorage = vi.mocked(storage);
+const mockedUseLocalStorage = vi.mocked(useLocalStorage);
 
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+
+    mockedUseLocalStorage.mockReturnValue({
+      value: '',
+      setValue: vi.fn(),
+      removeValue: vi.fn(),
+    });
   });
 
   it('calls fetchCharacters on mount', async () => {
@@ -31,7 +34,7 @@ describe('App', () => {
 
     render(<App />);
 
-    expect(mockedFetchCharacters).toHaveBeenCalled();
+    expect(mockedFetchCharacters).toHaveBeenCalledWith('');
 
     await screen.findByRole('button', {
       name: /test error/i,
@@ -46,50 +49,69 @@ describe('App', () => {
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
   });
 
-  it('reads search from localStorage on mount', async () => {
-    mockedStorage.getSearch.mockReturnValue('Morty');
+  it('reads search query from useLocalStorage', async () => {
+    mockedUseLocalStorage.mockReturnValue({
+      value: 'Morty',
+      setValue: vi.fn(),
+      removeValue: vi.fn(),
+    });
 
     mockedFetchCharacters.mockResolvedValue([]);
 
     render(<App />);
 
     await waitFor(() => {
-      expect(mockedStorage.getSearch).toHaveBeenCalled();
+      expect(mockedFetchCharacters).toHaveBeenCalledWith('Morty');
     });
   });
 
-  it('handles search flow (input + click + fetch)', async () => {
+  it('handles search flow', async () => {
     const user = userEvent.setup();
 
-    mockedStorage.getSearch.mockReturnValue('');
+    const setValue = vi.fn();
+
+    mockedUseLocalStorage.mockReturnValue({
+      value: '',
+      setValue,
+      removeValue: vi.fn(),
+    });
+
     mockedFetchCharacters.mockResolvedValue(mockCharacters);
 
     render(<App />);
 
     const input = screen.getByRole('textbox');
-    const button = screen.getByRole('button', { name: /search/i });
+    const button = screen.getByRole('button', {
+      name: /search/i,
+    });
 
     await user.type(input, 'Rick');
     await user.click(button);
 
-    expect(mockedStorage.setSearch).toHaveBeenCalledWith('Rick');
-    expect(mockedFetchCharacters).toHaveBeenCalled();
+    expect(setValue).toHaveBeenCalledWith('Rick');
   });
 
-  it('does not fetch again if search is same as stored value', async () => {
+  it('does not search if query equals stored value', async () => {
     const user = userEvent.setup();
 
-    mockedStorage.getSearch.mockReturnValue('Rick');
+    const setValue = vi.fn();
+
+    mockedUseLocalStorage.mockReturnValue({
+      value: 'Rick',
+      setValue,
+      removeValue: vi.fn(),
+    });
+
     mockedFetchCharacters.mockResolvedValue([]);
 
     render(<App />);
 
-    mockedFetchCharacters.mockClear();
-
-    const button = screen.getByRole('button', { name: /search/i });
+    const button = screen.getByRole('button', {
+      name: /search/i,
+    });
 
     await user.click(button);
 
-    expect(mockedFetchCharacters).not.toHaveBeenCalled();
+    expect(setValue).not.toHaveBeenCalled();
   });
 });

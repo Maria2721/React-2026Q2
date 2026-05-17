@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { storage } from './utils/storage';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 import { Header } from './components/Header/Header';
 import { SearchSection } from './components/SearchSection/SearchSection';
@@ -9,32 +9,32 @@ import { fetchCharacters } from './api/characters';
 import type { AppState } from './ts/interfaces';
 
 export default function App() {
-  const [query, setQuery] = useState(() => storage.getSearch() ?? '');
+  const { value: searchQuery, setValue: setSearchQuery } =
+    useLocalStorage<string>('search', '');
+  const [query, setQuery] = useState(searchQuery);
   const [results, setResults] = useState<AppState['results']>([]);
   const [loading, setLoading] = useState<AppState['loading']>(false);
   const [error, setError] = useState<AppState['error']>(null);
   const [crash, setCrash] = useState(false);
 
-  const fetchData = useCallback(async (searchQuery: string) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const results = await fetchCharacters(searchQuery);
-      setResults(results);
-    } catch {
-      setError('Something went wrong. Try again.');
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    const saved = storage.getSearch() ?? '';
+    const loadCharacters = async () => {
+      setLoading(true);
+      setError(null);
 
-    fetchData(saved);
-  }, [fetchData]);
+      try {
+        const results = await fetchCharacters(searchQuery);
+        setResults(results);
+      } catch {
+        setError('Something went wrong. Try again.');
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCharacters();
+  }, [searchQuery]);
 
   const handleChange = useCallback((value: string) => {
     setQuery(value);
@@ -42,14 +42,12 @@ export default function App() {
 
   const handleSearch = useCallback(() => {
     const trimmed = query.trim();
-    const saved = storage.getSearch();
 
-    if (trimmed === saved) return;
+    if (trimmed === searchQuery) return;
 
-    storage.setSearch(trimmed);
     setQuery(trimmed);
-    fetchData(trimmed);
-  }, [query, fetchData]);
+    setSearchQuery(trimmed);
+  }, [query, searchQuery, setSearchQuery]);
 
   if (crash) {
     throw new Error('Test error');
