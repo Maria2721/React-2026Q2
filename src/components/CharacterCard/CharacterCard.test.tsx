@@ -6,25 +6,25 @@ import { mockCharacters } from '../../test-utils/mocks';
 
 describe('CharacterCard', () => {
   it('renders character name', () => {
-    render(<CharacterCard {...mockCharacters[0]} />);
+    render(<CharacterCard character={mockCharacters[0]} />);
 
     expect(screen.getByText('Rick Sanchez')).toBeInTheDocument();
   });
 
   it('renders species and gender', () => {
-    render(<CharacterCard {...mockCharacters[0]} />);
+    render(<CharacterCard character={mockCharacters[0]} />);
 
     expect(screen.getByText(/human • male/i)).toBeInTheDocument();
   });
 
   it('renders status', () => {
-    render(<CharacterCard {...mockCharacters[0]} />);
+    render(<CharacterCard character={mockCharacters[0]} />);
 
     expect(screen.getByText('Alive')).toBeInTheDocument();
   });
 
   it('renders origin and location', () => {
-    render(<CharacterCard {...mockCharacters[0]} />);
+    render(<CharacterCard character={mockCharacters[0]} />);
 
     expect(screen.getByText('Earth')).toBeInTheDocument();
 
@@ -32,14 +32,14 @@ describe('CharacterCard', () => {
   });
 
   it('renders episode count', () => {
-    render(<CharacterCard {...mockCharacters[0]} />);
+    render(<CharacterCard character={mockCharacters[0]} />);
 
     expect(screen.getByText('2 appearances')).toBeInTheDocument();
   });
 
   describe('status styles', () => {
     it('renders alive status styles', () => {
-      render(<CharacterCard {...mockCharacters[0]} />);
+      render(<CharacterCard character={mockCharacters[0]} />);
 
       const status = screen.getByText('Alive');
 
@@ -49,7 +49,12 @@ describe('CharacterCard', () => {
     });
 
     it('renders dead status styles', () => {
-      render(<CharacterCard {...mockCharacters[0]} status="Dead" />);
+      const deadCharacter = {
+        ...mockCharacters[0],
+        status: 'Dead',
+      };
+
+      render(<CharacterCard character={deadCharacter} />);
 
       const status = screen.getByText('Dead');
 
@@ -59,7 +64,12 @@ describe('CharacterCard', () => {
     });
 
     it('renders unknown status styles', () => {
-      render(<CharacterCard {...mockCharacters[0]} status="unknown" />);
+      const unknownCharacter = {
+        ...mockCharacters[0],
+        status: 'unknown',
+      };
+
+      render(<CharacterCard character={unknownCharacter} />);
 
       const status = screen.getByText('unknown');
 

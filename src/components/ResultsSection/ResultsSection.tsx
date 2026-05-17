@@ -31,18 +31,8 @@ export class ResultsSection extends Component<ResultsProps> {
 
         {!loading && !error && results.length > 0 && (
           <div className="grid gap-3">
-            {results.map((item) => (
-              <CharacterCard
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                status={item.status}
-                species={item.species}
-                gender={item.gender}
-                origin={item.origin}
-                location={item.location}
-                episode={item.episode}
-              />
+            {results.map((character) => (
+              <CharacterCard key={character.id} character={character} />
             ))}
           </div>
         )}
