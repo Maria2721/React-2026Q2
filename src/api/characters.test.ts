@@ -10,31 +10,39 @@ describe('fetchCharacters', () => {
     mockFetch.mockClear();
   });
 
-  it('returns characters on success', async () => {
+  it('returns characters and pages on success', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({
         results: mockCharacters,
+        info: { pages: 3 },
       }),
     });
 
-    const result = await fetchCharacters('Rick');
+    const result = await fetchCharacters('Rick', 1);
 
     expect(mockFetch).toHaveBeenCalled();
-    expect(result).toEqual(mockCharacters);
+
+    expect(result).toEqual({
+      results: mockCharacters,
+      pages: 3,
+    });
   });
 
-  it('returns empty array on 404', async () => {
+  it('returns empty results and pages=1 on 404', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => ({ error: 'Not found' }),
     });
 
-    const result = await fetchCharacters('unknown');
+    const result = await fetchCharacters('unknown', 1);
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({
+      results: [],
+      pages: 1,
+    });
   });
 
   it('throws error on server failure', async () => {
@@ -44,18 +52,23 @@ describe('fetchCharacters', () => {
       json: async () => ({ error: 'Server error' }),
     });
 
-    await expect(fetchCharacters('Rick')).rejects.toThrow('Server error');
+    await expect(fetchCharacters('Rick', 1)).rejects.toThrow('Server error');
   });
 
-  it('returns empty array if results is missing', async () => {
+  it('returns empty results if results is missing', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({}),
+      json: async () => ({
+        info: { pages: 2 },
+      }),
     });
 
-    const result = await fetchCharacters('Rick');
+    const result = await fetchCharacters('Rick', 1);
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({
+      results: [],
+      pages: 2,
+    });
   });
 });

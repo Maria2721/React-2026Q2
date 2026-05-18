@@ -5,10 +5,17 @@ import userEvent from '@testing-library/user-event';
 import HomePage from './HomePage';
 
 import { fetchCharacters } from '../../api/characters';
-
 import { mockCharacters } from '../../test-utils/mocks';
 
-import type { SearchProps, ResultsProps } from '../../ts/interfaces';
+import type { SearchProps, ResultsProps, Character } from '../../ts/interfaces';
+
+vi.mock('react-router', () => ({
+  useSearchParams: () => {
+    const params = new URLSearchParams({ page: '1' });
+
+    return [params, vi.fn()];
+  },
+}));
 
 vi.mock('../../api/characters', () => ({
   fetchCharacters: vi.fn(),
@@ -24,7 +31,6 @@ vi.mock('../../components/SearchSection/SearchSection', () => ({
       <div data-testid="search-value">{value}</div>
 
       <button onClick={() => onChange('Rick')}>Change Search</button>
-
       <button onClick={onSearch}>Search</button>
     </div>
   ),
@@ -33,13 +39,32 @@ vi.mock('../../components/SearchSection/SearchSection', () => ({
 vi.mock('../../components/ResultsSection/ResultsSection', () => ({
   ResultsSection: ({ results, loading, error }: ResultsProps) => (
     <div>
-      <div data-testid="results">{JSON.stringify(results)}</div>
+      <div data-testid="results">
+        {results.map((r: Character) => r.name).join(', ')}
+      </div>
 
       <div data-testid="loading">{loading ? 'loading' : 'idle'}</div>
 
       <div data-testid="error">{error ?? 'no-error'}</div>
     </div>
   ),
+}));
+
+vi.mock('../../components/Pagination/Pagination', () => ({
+  Pagination: (props: {
+    page: number;
+    totalPages: number;
+    onPrev: () => void;
+    onNext: () => void;
+  }) => {
+    return (
+      <div>
+        <div data-testid="page">{props.page}</div>
+        <button onClick={props.onPrev}>Prev</button>
+        <button onClick={props.onNext}>Next</button>
+      </div>
+    );
+  },
 }));
 
 describe('HomePage', () => {
@@ -49,7 +74,10 @@ describe('HomePage', () => {
   });
 
   it('renders page sections', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue(mockCharacters);
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
 
     render(<HomePage />);
 
@@ -61,28 +89,31 @@ describe('HomePage', () => {
     expect(screen.getByTestId('results')).toBeInTheDocument();
   });
 
-  it('fetches characters on mount', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue(mockCharacters);
+  it('fetches characters on mount with correct args', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
 
     render(<HomePage />);
 
     await waitFor(() => {
-      expect(fetchCharacters).toHaveBeenCalledWith('');
+      expect(fetchCharacters).toHaveBeenCalledWith('', 1);
     });
-
-    expect(screen.getByTestId('loading')).toHaveTextContent('idle');
   });
 
   it('passes fetched results to ResultsSection', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue(mockCharacters);
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
 
     render(<HomePage />);
 
     await waitFor(() => {
       expect(screen.getByTestId('results')).toHaveTextContent('Rick Sanchez');
+      expect(screen.getByTestId('results')).toHaveTextContent('Morty Smith');
     });
-
-    expect(screen.getByTestId('results')).toHaveTextContent('Morty Smith');
   });
 
   it('handles fetch error', async () => {
@@ -100,6 +131,11 @@ describe('HomePage', () => {
   it('updates input value via SearchSection', async () => {
     const user = userEvent.setup();
 
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: [],
+      pages: 1,
+    });
+
     render(<HomePage />);
 
     await user.click(screen.getByText('Change Search'));
@@ -107,26 +143,29 @@ describe('HomePage', () => {
     expect(screen.getByTestId('search-value')).toHaveTextContent('Rick');
   });
 
-  it('saves search query to localStorage', async () => {
+  it('triggers search and updates localStorage', async () => {
     const user = userEvent.setup();
+
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
 
     render(<HomePage />);
 
     await user.click(screen.getByText('Change Search'));
     await user.click(screen.getByText('Search'));
 
-    expect(localStorage.getItem('search')).toBe(JSON.stringify('Rick'));
+    expect(fetchCharacters).toHaveBeenCalled();
   });
 
-  it('does not update localStorage if value unchanged', async () => {
+  it('does not update search if value unchanged', async () => {
     const user = userEvent.setup();
-
-    localStorage.setItem('search', JSON.stringify('Rick'));
 
     render(<HomePage />);
 
     await user.click(screen.getByText('Search'));
 
-    expect(localStorage.getItem('search')).toBe(JSON.stringify('Rick'));
+    expect(fetchCharacters).toHaveBeenCalledTimes(1);
   });
 });

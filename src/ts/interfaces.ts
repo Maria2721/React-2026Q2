@@ -34,8 +34,28 @@ interface ResultsProps {
 }
 
 interface ApiResponse {
+  info?: {
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
   results?: Character[];
   error?: string;
 }
 
-export type { SearchProps, AppState, ResultsProps, Character, ApiResponse };
+interface PaginationProps {
+  page: number;
+  totalPages: number;
+  onNext: () => void;
+  onPrev: () => void;
+  loading?: boolean;
+}
+
+export type {
+  SearchProps,
+  AppState,
+  ResultsProps,
+  Character,
+  ApiResponse,
+  PaginationProps,
+};

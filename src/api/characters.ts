@@ -1,20 +1,32 @@
 import type { Character, ApiResponse } from '../ts/interfaces';
 
-export const fetchCharacters = async (query: string): Promise<Character[]> => {
+export const fetchCharacters = async (
+  query: string,
+  page: number
+): Promise<{ results: Character[]; pages: number }> => {
   const baseUrl = 'https://rickandmortyapi.com/api/character';
 
-  const url = query ? `${baseUrl}/?name=${encodeURIComponent(query)}` : baseUrl;
+  const url = new URL(baseUrl);
 
-  const res = await fetch(url);
+  if (query) {
+    url.searchParams.append('name', query);
+  }
+
+  url.searchParams.append('page', String(page));
+
+  const res = await fetch(url.toString());
   const data: ApiResponse = await res.json();
 
   if (!res.ok) {
     if (res.status === 404) {
-      return [];
+      return { results: [], pages: 1 };
     }
 
     throw new Error(data.error ?? `HTTP error ${res.status}`);
   }
 
-  return data.results ?? [];
+  return {
+    results: data.results ?? [],
+    pages: data.info?.pages ?? 1,
+  };
 };
