@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { Header } from './Header';
+import { HomeTitle } from './HomeTitle';
 
-describe('Header', () => {
-  it('renders main title', () => {
-    render(<Header />);
+describe('HomeTitle', () => {
+  it('renders home title', () => {
+    render(<HomeTitle />);
 
     expect(screen.getByText('🔍 Search Explorer')).toBeInTheDocument();
   });
 
-  it('renders subtitle', () => {
-    render(<Header />);
+  it('renders home subtitle', () => {
+    render(<HomeTitle />);
 
     expect(
       screen.getByText('Find and explore items instantly')
