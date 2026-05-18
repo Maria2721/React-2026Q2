@@ -54,7 +54,7 @@ export function Search({ value, onChange, onSearch }: SearchProps) {
             px-5 py-2 rounded-xl font-medium text-white transition
             bg-linear-to-r from-blue-500 to-indigo-500
             shadow-sm hover:shadow-md hover:scale-[1.02]
-            active:scale-[0.95]
+            active:scale-[0.95] cursor-pointer
             ${isPressed ? 'scale-[0.95] shadow-inner' : ''}
           `}
       >
