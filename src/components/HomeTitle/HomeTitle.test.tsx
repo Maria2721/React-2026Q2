@@ -6,14 +6,16 @@ describe('HomeTitle', () => {
   it('renders home title', () => {
     render(<HomeTitle />);
 
-    expect(screen.getByText('🔍 Search Explorer')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Rick & Morty Character Explorer/i)
+    ).toBeInTheDocument();
   });
 
   it('renders home subtitle', () => {
     render(<HomeTitle />);
 
     expect(
-      screen.getByText('Find and explore items instantly')
+      screen.getByText(/Find and explore characters instantly/i)
     ).toBeInTheDocument();
   });
 });

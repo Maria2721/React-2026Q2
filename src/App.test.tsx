@@ -16,13 +16,17 @@ describe('App routing', () => {
   it('renders HomePage on / route', () => {
     renderWithRouter(['/']);
 
-    expect(screen.getByText(/search explorer/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Rick & Morty Character Explorer/i)
+    ).toBeInTheDocument();
   });
 
   it('renders AboutPage on /about route', () => {
     renderWithRouter(['/about']);
 
-    expect(screen.getByText(/about this application/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/React application for searching and exploring/i)
+    ).toBeInTheDocument();
   });
 
   it('renders NotFoundPage on unknown route', () => {
