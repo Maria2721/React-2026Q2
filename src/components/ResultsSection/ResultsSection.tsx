@@ -2,7 +2,12 @@ import { CharacterCard } from '../CharacterCard/CharacterCard';
 
 import type { ResultsProps } from '../../ts/interfaces';
 
-export function ResultsSection({ results, loading, error }: ResultsProps) {
+export function ResultsSection({
+  results,
+  loading,
+  error,
+  onSelect,
+}: ResultsProps) {
   const isEmpty = !loading && !error && results.length === 0;
   const hasResults = !loading && !error && results.length > 0;
 
@@ -32,7 +37,11 @@ export function ResultsSection({ results, loading, error }: ResultsProps) {
       {hasResults && (
         <div className="grid gap-3">
           {results.map((character) => (
-            <CharacterCard key={character.id} character={character} />
+            <CharacterCard
+              key={character.id}
+              character={character}
+              onSelect={onSelect}
+            />
           ))}
         </div>
       )}

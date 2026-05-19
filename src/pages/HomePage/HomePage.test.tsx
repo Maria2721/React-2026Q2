@@ -9,12 +9,19 @@ import { mockCharacters } from '../../test-utils/mocks';
 
 import type { SearchProps, ResultsProps, Character } from '../../ts/interfaces';
 
+const mockSetSearchParams = vi.fn();
+const mockNavigate = vi.fn();
+
 vi.mock('react-router', () => ({
   useSearchParams: () => {
     const params = new URLSearchParams({ page: '1' });
 
-    return [params, vi.fn()];
+    return [params, mockSetSearchParams];
   },
+
+  useNavigate: () => mockNavigate,
+
+  Outlet: () => <div>Outlet</div>,
 }));
 
 vi.mock('../../api/characters', () => ({
@@ -31,6 +38,7 @@ vi.mock('../../components/SearchSection/SearchSection', () => ({
       <div data-testid="search-value">{value}</div>
 
       <button onClick={() => onChange('Rick')}>Change Search</button>
+
       <button onClick={onSearch}>Search</button>
     </div>
   ),
@@ -51,20 +59,25 @@ vi.mock('../../components/ResultsSection/ResultsSection', () => ({
 }));
 
 vi.mock('../../components/Pagination/Pagination', () => ({
-  Pagination: (props: {
+  Pagination: ({
+    page,
+    totalPages,
+    onPrev,
+    onNext,
+  }: {
     page: number;
     totalPages: number;
     onPrev: () => void;
     onNext: () => void;
-  }) => {
-    return (
-      <div>
-        <div data-testid="page">{props.page}</div>
-        <button onClick={props.onPrev}>Prev</button>
-        <button onClick={props.onNext}>Next</button>
-      </div>
-    );
-  },
+  }) => (
+    <div>
+      <div data-testid="page">{page}</div>
+      <div data-testid="total-pages">{totalPages}</div>
+
+      <button onClick={onPrev}>Prev</button>
+      <button onClick={onNext}>Next</button>
+    </div>
+  ),
 }));
 
 describe('HomePage', () => {
@@ -112,6 +125,7 @@ describe('HomePage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('results')).toHaveTextContent('Rick Sanchez');
+
       expect(screen.getByTestId('results')).toHaveTextContent('Morty Smith');
     });
   });
@@ -143,7 +157,7 @@ describe('HomePage', () => {
     expect(screen.getByTestId('search-value')).toHaveTextContent('Rick');
   });
 
-  it('triggers search and updates localStorage', async () => {
+  it('triggers search and updates search params', async () => {
     const user = userEvent.setup();
 
     vi.mocked(fetchCharacters).mockResolvedValue({
@@ -156,16 +170,63 @@ describe('HomePage', () => {
     await user.click(screen.getByText('Change Search'));
     await user.click(screen.getByText('Search'));
 
-    expect(fetchCharacters).toHaveBeenCalled();
+    expect(mockSetSearchParams).toHaveBeenCalledWith({
+      page: '1',
+    });
   });
 
-  it('does not update search if value unchanged', async () => {
+  it('does not trigger new search if value unchanged', async () => {
     const user = userEvent.setup();
+
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: [],
+      pages: 1,
+    });
 
     render(<HomePage />);
 
+    await waitFor(() => {
+      expect(fetchCharacters).toHaveBeenCalledTimes(1);
+    });
+
     await user.click(screen.getByText('Search'));
 
-    expect(fetchCharacters).toHaveBeenCalledTimes(1);
+    expect(mockSetSearchParams).not.toHaveBeenCalled();
+  });
+
+  it('renders pagination when results exist', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
+
+    render(<HomePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('page')).toHaveTextContent('1');
+    });
+
+    expect(screen.getByTestId('total-pages')).toHaveTextContent('3');
+  });
+
+  it('handles next page click', async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(fetchCharacters).mockResolvedValue({
+      results: mockCharacters,
+      pages: 3,
+    });
+
+    render(<HomePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Next')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Next'));
+
+    expect(mockSetSearchParams).toHaveBeenCalledWith({
+      page: '2',
+    });
   });
 });

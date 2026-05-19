@@ -17,6 +17,7 @@ interface Character {
     name: string;
   };
   episode: string[];
+  image?: string;
 }
 
 interface AppState {
@@ -31,6 +32,7 @@ interface ResultsProps {
   results: Character[];
   loading: boolean;
   error: string | null;
+  onSelect: (id: number) => void;
 }
 
 interface ApiResponse {

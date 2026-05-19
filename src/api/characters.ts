@@ -1,11 +1,11 @@
 import type { Character, ApiResponse } from '../ts/interfaces';
 
+const baseUrl = 'https://rickandmortyapi.com/api/character';
+
 export const fetchCharacters = async (
   query: string,
   page: number
 ): Promise<{ results: Character[]; pages: number }> => {
-  const baseUrl = 'https://rickandmortyapi.com/api/character';
-
   const url = new URL(baseUrl);
 
   if (query) {
@@ -29,4 +29,16 @@ export const fetchCharacters = async (
     results: data.results ?? [],
     pages: data.info?.pages ?? 1,
   };
+};
+
+export const fetchCharacterById = async (id: string): Promise<Character> => {
+  const res = await fetch(`${baseUrl}/${id}`);
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? `HTTP error ${res.status}`);
+  }
+
+  return data;
 };

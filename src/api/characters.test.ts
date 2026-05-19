@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchCharacters } from './characters';
+import { fetchCharacters, fetchCharacterById } from './characters';
 import { mockCharacters } from '../test-utils/mocks';
 
 const mockFetch = vi.fn();
@@ -8,6 +8,24 @@ vi.stubGlobal('fetch', mockFetch);
 describe('fetchCharacters', () => {
   beforeEach(() => {
     mockFetch.mockClear();
+  });
+
+  it('calls API with correct URL params', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: mockCharacters,
+        info: { pages: 3 },
+      }),
+    });
+
+    await fetchCharacters('Rick', 2);
+
+    const calledUrl = mockFetch.mock.calls[0][0];
+
+    expect(calledUrl).toContain('name=Rick');
+    expect(calledUrl).toContain('page=2');
   });
 
   it('returns characters and pages on success', async () => {
@@ -21,8 +39,6 @@ describe('fetchCharacters', () => {
     });
 
     const result = await fetchCharacters('Rick', 1);
-
-    expect(mockFetch).toHaveBeenCalled();
 
     expect(result).toEqual({
       results: mockCharacters,
@@ -45,7 +61,7 @@ describe('fetchCharacters', () => {
     });
   });
 
-  it('throws error on server failure', async () => {
+  it('throws error on server failure with API message', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
@@ -53,6 +69,16 @@ describe('fetchCharacters', () => {
     });
 
     await expect(fetchCharacters('Rick', 1)).rejects.toThrow('Server error');
+  });
+
+  it('throws fallback error if API error is missing', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(fetchCharacters('Rick', 1)).rejects.toThrow('HTTP error 500');
   });
 
   it('returns empty results if results is missing', async () => {
@@ -70,5 +96,57 @@ describe('fetchCharacters', () => {
       results: [],
       pages: 2,
     });
+  });
+
+  it('returns pages=1 if info is missing', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: mockCharacters,
+      }),
+    });
+
+    const result = await fetchCharacters('Rick', 1);
+
+    expect(result.pages).toBe(1);
+  });
+});
+
+describe('fetchCharacterById', () => {
+  beforeEach(() => {
+    mockFetch.mockClear();
+  });
+
+  it('returns character on success', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockCharacters[0],
+    });
+
+    const result = await fetchCharacterById('1');
+
+    expect(result).toEqual(mockCharacters[0]);
+  });
+
+  it('throws error on failure', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: 'Not found' }),
+    });
+
+    await expect(fetchCharacterById('999')).rejects.toThrow('Not found');
+  });
+
+  it('throws fallback error if message missing', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(fetchCharacterById('1')).rejects.toThrow('HTTP error 500');
   });
 });

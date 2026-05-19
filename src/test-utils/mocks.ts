@@ -12,6 +12,7 @@ export const mockCharacters = [
       name: 'Citadel of Ricks',
     },
     episode: ['episode-1', 'episode-2'],
+    image: 'https://rickandmortyapi.com/api/character/avatar/1.jpeg',
   },
   {
     id: 2,
@@ -26,5 +27,6 @@ export const mockCharacters = [
       name: 'Earth',
     },
     episode: ['episode-1'],
+    image: 'https://rickandmortyapi.com/api/character/avatar/2.jpeg',
   },
 ];

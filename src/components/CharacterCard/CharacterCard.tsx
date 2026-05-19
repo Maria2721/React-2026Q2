@@ -2,10 +2,11 @@ import type { Character } from '../../ts/interfaces';
 
 interface CharacterCardProps {
   character: Character;
+  onSelect: (id: number) => void;
 }
 
-export function CharacterCard({ character }: CharacterCardProps) {
-  const { name, status, species, gender, origin, location, episode } =
+export function CharacterCard({ character, onSelect }: CharacterCardProps) {
+  const { id, name, status, species, gender, origin, location, episode } =
     character;
 
   const statusStyles =
@@ -16,7 +17,10 @@ export function CharacterCard({ character }: CharacterCardProps) {
         : 'bg-gray-100 text-gray-600 ring-gray-200';
 
   return (
-    <div className="group relative p-5 rounded-2xl border bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div
+      className="group relative p-5 rounded-2xl border bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+      onClick={() => onSelect(id)}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
