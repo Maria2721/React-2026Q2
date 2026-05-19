@@ -1,98 +1,24 @@
-import { Component } from 'react';
-import type { AppState } from './ts/interfaces';
-import { Header } from './components/Header/Header';
-import { SearchSection } from './components/SearchSection/SearchSection';
-import { ResultsSection } from './components/ResultsSection/ResultsSection';
-import { fetchCharacters } from './api/characters';
-import { storage } from './utils/storage';
+import { Routes, Route } from 'react-router';
 
-export default class App extends Component<object, AppState> {
-  state: AppState = {
-    query: '',
-    results: [],
-    loading: false,
-    error: null,
-    crash: false,
-  };
+import MainLayout from './layout/MainLayout/MainLayout';
 
-  componentDidMount() {
-    const saved = storage.getSearch() ?? '';
+import HomePage from './pages/HomePage/HomePage';
+import CharacterDetailsPage from './pages/CharacterDetailsPage/CharacterDetailsPage';
+import AboutPage from './pages/AboutPage/AboutPage';
+import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 
-    this.setState({ query: saved }, () => {
-      this.fetchData();
-    });
-  }
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route path="/" element={<HomePage />}>
+          <Route path="character/:id" element={<CharacterDetailsPage />} />
+        </Route>
 
-  handleChange = (value: string) => {
-    this.setState({ query: value });
-  };
+        <Route path="about" element={<AboutPage />} />
+      </Route>
 
-  handleSearch = () => {
-    const trimmed = this.state.query.trim();
-    const saved = storage.getSearch();
-
-    if (trimmed === saved) return;
-
-    storage.setSearch(trimmed);
-
-    this.setState({ query: trimmed }, () => {
-      this.fetchData();
-    });
-  };
-
-  fetchData = async () => {
-    const { query } = this.state;
-
-    this.setState({ loading: true, error: null });
-
-    try {
-      const results = await fetchCharacters(query);
-
-      this.setState({
-        results,
-        loading: false,
-      });
-    } catch {
-      this.setState({
-        error: 'Something went wrong. Try again.',
-        loading: false,
-        results: [],
-      });
-    }
-  };
-
-  render() {
-    const { query, results, loading, error } = this.state;
-
-    if (this.state.crash) {
-      throw new Error('Test error');
-    }
-
-    return (
-      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex justify-center p-8">
-        <div className="w-full max-w-3xl flex flex-col gap-8">
-          <Header />
-
-          <main className="flex flex-col gap-6">
-            <SearchSection
-              value={query}
-              onChange={this.handleChange}
-              onSearch={this.handleSearch}
-            />
-
-            <ResultsSection results={results} loading={loading} error={error} />
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => this.setState({ crash: true })}
-                className="px-5 py-2 rounded-xl font-medium text-white transition bg-linear-to-r from-purple-400 to-pink-400 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.95]"
-              >
-                Test Error
-              </button>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
 }

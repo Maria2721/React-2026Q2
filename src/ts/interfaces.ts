@@ -4,10 +4,6 @@ interface SearchProps {
   onSearch: () => void;
 }
 
-interface PressedState {
-  isPressed: boolean;
-}
-
 interface Character {
   id: number;
   name: string;
@@ -21,6 +17,7 @@ interface Character {
     name: string;
   };
   episode: string[];
+  image?: string;
 }
 
 interface AppState {
@@ -35,18 +32,32 @@ interface ResultsProps {
   results: Character[];
   loading: boolean;
   error: string | null;
+  onSelect: (id: number) => void;
 }
 
 interface ApiResponse {
+  info?: {
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
   results?: Character[];
   error?: string;
 }
 
+interface PaginationProps {
+  page: number;
+  totalPages: number;
+  onNext: () => void;
+  onPrev: () => void;
+  loading?: boolean;
+}
+
 export type {
   SearchProps,
-  PressedState,
   AppState,
   ResultsProps,
   Character,
   ApiResponse,
+  PaginationProps,
 };

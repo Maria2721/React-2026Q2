@@ -1,95 +1,37 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { MemoryRouter } from 'react-router';
 
 import App from './App';
-import { fetchCharacters } from './api/characters';
-import { mockCharacters } from './test-utils/mocks';
-import { storage } from './utils/storage';
 
-vi.mock('./api/characters', () => ({
-  fetchCharacters: vi.fn(),
-}));
-vi.mock('./utils/storage', () => ({
-  storage: {
-    getSearch: vi.fn(),
-    setSearch: vi.fn(),
-  },
-}));
+const renderWithRouter = (initialEntries: string[]) => {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <App />
+    </MemoryRouter>
+  );
+};
 
-const mockedFetchCharacters = vi.mocked(fetchCharacters);
-const mockedStorage = vi.mocked(storage);
+describe('App routing', () => {
+  it('renders HomePage on / route', () => {
+    renderWithRouter(['/']);
 
-describe('App', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    localStorage.clear();
+    expect(
+      screen.getByText(/Rick & Morty Character Explorer/i)
+    ).toBeInTheDocument();
   });
 
-  it('calls fetchCharacters on mount', async () => {
-    mockedFetchCharacters.mockResolvedValue([]);
+  it('renders AboutPage on /about route', () => {
+    renderWithRouter(['/about']);
 
-    render(<App />);
-
-    expect(mockedFetchCharacters).toHaveBeenCalled();
-
-    await screen.findByRole('button', {
-      name: /test error/i,
-    });
+    expect(
+      screen.getByText(/React application for searching and exploring/i)
+    ).toBeInTheDocument();
   });
 
-  it('renders characters after successful fetch', async () => {
-    mockedFetchCharacters.mockResolvedValue(mockCharacters);
+  it('renders NotFoundPage on unknown route', () => {
+    renderWithRouter(['/random-route']);
 
-    render(<App />);
-
-    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
-  });
-
-  it('reads search from localStorage on mount', async () => {
-    mockedStorage.getSearch.mockReturnValue('Morty');
-
-    mockedFetchCharacters.mockResolvedValue([]);
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(mockedStorage.getSearch).toHaveBeenCalled();
-    });
-  });
-
-  it('handles search flow (input + click + fetch)', async () => {
-    const user = userEvent.setup();
-
-    mockedStorage.getSearch.mockReturnValue('');
-    mockedFetchCharacters.mockResolvedValue(mockCharacters);
-
-    render(<App />);
-
-    const input = screen.getByRole('textbox');
-    const button = screen.getByRole('button', { name: /search/i });
-
-    await user.type(input, 'Rick');
-    await user.click(button);
-
-    expect(mockedStorage.setSearch).toHaveBeenCalledWith('Rick');
-    expect(mockedFetchCharacters).toHaveBeenCalled();
-  });
-
-  it('does not fetch again if search is same as stored value', async () => {
-    const user = userEvent.setup();
-
-    mockedStorage.getSearch.mockReturnValue('Rick');
-    mockedFetchCharacters.mockResolvedValue([]);
-
-    render(<App />);
-
-    mockedFetchCharacters.mockClear();
-
-    const button = screen.getByRole('button', { name: /search/i });
-
-    await user.click(button);
-
-    expect(mockedFetchCharacters).not.toHaveBeenCalled();
+    expect(screen.getByText(/page not found/i)).toBeInTheDocument();
   });
 });

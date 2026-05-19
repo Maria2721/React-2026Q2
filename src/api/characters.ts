@@ -1,20 +1,44 @@
 import type { Character, ApiResponse } from '../ts/interfaces';
 
-export const fetchCharacters = async (query: string): Promise<Character[]> => {
-  const url = query
-    ? `https://rickandmortyapi.com/api/character/?name=${query}`
-    : `https://rickandmortyapi.com/api/character`;
+const baseUrl = 'https://rickandmortyapi.com/api/character';
 
-  const res = await fetch(url);
-  const data: ApiResponse = await res.json();
+export const fetchCharacters = async (
+  query: string,
+  page: number
+): Promise<{ results: Character[]; pages: number }> => {
+  const url = new URL(baseUrl);
 
-  if (res.status === 404) {
-    return [];
+  if (query) {
+    url.searchParams.append('name', query);
   }
 
+  url.searchParams.append('page', String(page));
+
+  const res = await fetch(url.toString());
+  const data: ApiResponse = await res.json();
+
   if (!res.ok) {
+    if (res.status === 404) {
+      return { results: [], pages: 1 };
+    }
+
     throw new Error(data.error ?? `HTTP error ${res.status}`);
   }
 
-  return data.results ?? [];
+  return {
+    results: data.results ?? [],
+    pages: data.info?.pages ?? 1,
+  };
+};
+
+export const fetchCharacterById = async (id: string): Promise<Character> => {
+  const res = await fetch(`${baseUrl}/${id}`);
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? `HTTP error ${res.status}`);
+  }
+
+  return data;
 };

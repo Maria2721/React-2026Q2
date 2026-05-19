@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchCharacters } from './characters';
+import { fetchCharacters, fetchCharacterById } from './characters';
 import { mockCharacters } from '../test-utils/mocks';
 
 const mockFetch = vi.fn();
@@ -10,7 +10,95 @@ describe('fetchCharacters', () => {
     mockFetch.mockClear();
   });
 
-  it('returns characters on success', async () => {
+  it('calls API with correct URL params', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: mockCharacters,
+        info: { pages: 3 },
+      }),
+    });
+
+    await fetchCharacters('Rick', 2);
+
+    const calledUrl = mockFetch.mock.calls[0][0];
+
+    expect(calledUrl).toContain('name=Rick');
+    expect(calledUrl).toContain('page=2');
+  });
+
+  it('returns characters and pages on success', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: mockCharacters,
+        info: { pages: 3 },
+      }),
+    });
+
+    const result = await fetchCharacters('Rick', 1);
+
+    expect(result).toEqual({
+      results: mockCharacters,
+      pages: 3,
+    });
+  });
+
+  it('returns empty results and pages=1 on 404', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: 'Not found' }),
+    });
+
+    const result = await fetchCharacters('unknown', 1);
+
+    expect(result).toEqual({
+      results: [],
+      pages: 1,
+    });
+  });
+
+  it('throws error on server failure with API message', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'Server error' }),
+    });
+
+    await expect(fetchCharacters('Rick', 1)).rejects.toThrow('Server error');
+  });
+
+  it('throws fallback error if API error is missing', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(fetchCharacters('Rick', 1)).rejects.toThrow('HTTP error 500');
+  });
+
+  it('returns empty results if results is missing', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        info: { pages: 2 },
+      }),
+    });
+
+    const result = await fetchCharacters('Rick', 1);
+
+    expect(result).toEqual({
+      results: [],
+      pages: 2,
+    });
+  });
+
+  it('returns pages=1 if info is missing', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -19,43 +107,46 @@ describe('fetchCharacters', () => {
       }),
     });
 
-    const result = await fetchCharacters('Rick');
+    const result = await fetchCharacters('Rick', 1);
 
-    expect(mockFetch).toHaveBeenCalled();
-    expect(result).toEqual(mockCharacters);
+    expect(result.pages).toBe(1);
+  });
+});
+
+describe('fetchCharacterById', () => {
+  beforeEach(() => {
+    mockFetch.mockClear();
   });
 
-  it('returns empty array on 404', async () => {
+  it('returns character on success', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockCharacters[0],
+    });
+
+    const result = await fetchCharacterById('1');
+
+    expect(result).toEqual(mockCharacters[0]);
+  });
+
+  it('throws error on failure', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => ({ error: 'Not found' }),
     });
 
-    const result = await fetchCharacters('unknown');
-
-    expect(result).toEqual([]);
+    await expect(fetchCharacterById('999')).rejects.toThrow('Not found');
   });
 
-  it('throws error on server failure', async () => {
+  it('throws fallback error if message missing', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
-      json: async () => ({ error: 'Server error' }),
-    });
-
-    await expect(fetchCharacters('Rick')).rejects.toThrow('Server error');
-  });
-
-  it('returns empty array if results is missing', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
       json: async () => ({}),
     });
 
-    const result = await fetchCharacters('Rick');
-
-    expect(result).toEqual([]);
+    await expect(fetchCharacterById('1')).rejects.toThrow('HTTP error 500');
   });
 });
