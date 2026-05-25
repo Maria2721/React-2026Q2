@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearSelected } from '../../store/selectedSlice';
 
-import { generateCSV } from '../../utils/csv';
+import { generateCSV } from '../../utils/generateCSV';
 import { downloadCSV } from '../../utils/downloadCSV';
 
 export function SelectedFlyout() {
