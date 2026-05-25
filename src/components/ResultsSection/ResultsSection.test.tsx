@@ -1,14 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ResultsSection } from './ResultsSection';
+
 import { mockCharacters } from '../../test-utils/mocks';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
 describe('ResultsSection', () => {
   const mockOnSelect = vi.fn();
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders section title', () => {
-    render(
+    renderWithProviders(
       <ResultsSection
         results={[]}
         loading={false}
@@ -26,7 +32,7 @@ describe('ResultsSection', () => {
 
   describe('states', () => {
     it('renders loader when loading', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={[]}
           loading={true}
@@ -39,7 +45,7 @@ describe('ResultsSection', () => {
     });
 
     it('renders error message', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={[]}
           loading={false}
@@ -52,7 +58,7 @@ describe('ResultsSection', () => {
     });
 
     it('renders empty state message', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={[]}
           loading={false}
@@ -67,7 +73,7 @@ describe('ResultsSection', () => {
 
   describe('results rendering', () => {
     it('renders character cards', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={mockCharacters}
           loading={false}
@@ -83,8 +89,25 @@ describe('ResultsSection', () => {
       expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(2);
     });
 
+    it('renders selection buttons for each character', () => {
+      renderWithProviders(
+        <ResultsSection
+          results={mockCharacters}
+          loading={false}
+          error=""
+          onSelect={mockOnSelect}
+        />
+      );
+
+      const buttons = screen.getAllByRole('button', {
+        name: /select/i,
+      });
+
+      expect(buttons).toHaveLength(2);
+    });
+
     it('does not render empty state when results exist', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={mockCharacters}
           loading={false}
@@ -97,7 +120,7 @@ describe('ResultsSection', () => {
     });
 
     it('does not render results while loading', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={mockCharacters}
           loading={true}
@@ -112,7 +135,7 @@ describe('ResultsSection', () => {
     });
 
     it('does not render results when error exists', () => {
-      render(
+      renderWithProviders(
         <ResultsSection
           results={mockCharacters}
           loading={false}
@@ -126,8 +149,8 @@ describe('ResultsSection', () => {
       expect(screen.getByText(/server error/i)).toBeInTheDocument();
     });
 
-    it('passes onSelect to CharacterCard', () => {
-      render(
+    it('renders all character names', () => {
+      renderWithProviders(
         <ResultsSection
           results={mockCharacters}
           loading={false}
@@ -136,9 +159,9 @@ describe('ResultsSection', () => {
         />
       );
 
-      const cards = screen.getAllByText(/rick|morty/i);
-
-      expect(cards.length).toBeGreaterThan(0);
+      mockCharacters.forEach((character) => {
+        expect(screen.getByText(character.name)).toBeInTheDocument();
+      });
     });
   });
 });

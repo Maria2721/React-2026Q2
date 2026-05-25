@@ -1,14 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
+
 import { MemoryRouter } from 'react-router';
+import { Provider } from 'react-redux';
 
 import App from './App';
 
+import { store } from './store/store';
+
+import { ThemeProvider } from './context/theme/ThemeProvider';
+
 const renderWithRouter = (initialEntries: string[]) => {
   return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <App />
-    </MemoryRouter>
+    <Provider store={store}>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={initialEntries}>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
+    </Provider>
   );
 };
 
