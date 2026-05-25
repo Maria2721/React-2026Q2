@@ -8,12 +8,16 @@ import App from './App';
 
 import { store } from './store/store';
 
+import { ThemeProvider } from './context/theme/ThemeProvider';
+
 const renderWithRouter = (initialEntries: string[]) => {
   return render(
     <Provider store={store}>
-      <MemoryRouter initialEntries={initialEntries}>
-        <App />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={initialEntries}>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
     </Provider>
   );
 };
