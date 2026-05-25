@@ -7,6 +7,7 @@ import { HomeTitle } from '../../components/HomeTitle/HomeTitle';
 import { SearchSection } from '../../components/SearchSection/SearchSection';
 import { ResultsSection } from '../../components/ResultsSection/ResultsSection';
 import { Pagination } from '../../components/Pagination/Pagination';
+import { SelectedFlyout } from '../../components/SelectedFlyout/SelectedFlyout';
 
 import { fetchCharacters } from '../../api/characters';
 
@@ -145,6 +146,8 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      <SelectedFlyout />
     </div>
   );
 }
