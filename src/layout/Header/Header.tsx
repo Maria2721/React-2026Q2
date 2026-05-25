@@ -20,7 +20,7 @@ const getLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function Header() {
   return (
-    <header className="bg-white dark:bg-gray-800 transition-colors duration-300">
+    <header className="bg-white dark:bg-gray-800 transition-colors">
       <div className="mx-auto max-w-6xl flex items-center justify-between px-8 py-4">
         <nav className="flex items-center gap-6">
           <NavLink to="/" className={getLinkClass}>
@@ -35,7 +35,7 @@ export function Header() {
         <ThemeToggle />
       </div>
 
-      <div className="h-0.5 w-full bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 opacity-70 dark:opacity-100" />
+      <div className="h-0.5 w-full bg-linear-to-r from-blue-400 via-purple-400 to-pink-400" />
     </header>
   );
 }
