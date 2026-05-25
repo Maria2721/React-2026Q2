@@ -1,14 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { fireEvent, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { CharacterCard } from './CharacterCard';
+
 import { mockCharacters } from '../../test-utils/mocks';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
 describe('CharacterCard', () => {
   const mockOnSelect = vi.fn();
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders character name', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
@@ -16,7 +22,7 @@ describe('CharacterCard', () => {
   });
 
   it('renders species and gender', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
@@ -24,7 +30,7 @@ describe('CharacterCard', () => {
   });
 
   it('renders status', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
@@ -32,7 +38,7 @@ describe('CharacterCard', () => {
   });
 
   it('renders origin and location', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
@@ -42,16 +48,28 @@ describe('CharacterCard', () => {
   });
 
   it('renders episode count', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
     expect(screen.getByText('2 appearances')).toBeInTheDocument();
   });
 
+  it('renders selection button', () => {
+    renderWithProviders(
+      <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: /select rick sanchez/i,
+      })
+    ).toBeInTheDocument();
+  });
+
   describe('status styles', () => {
     it('renders alive status styles', () => {
-      render(
+      renderWithProviders(
         <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
       );
 
@@ -68,7 +86,7 @@ describe('CharacterCard', () => {
         status: 'Dead',
       };
 
-      render(
+      renderWithProviders(
         <CharacterCard character={deadCharacter} onSelect={mockOnSelect} />
       );
 
@@ -85,7 +103,7 @@ describe('CharacterCard', () => {
         status: 'unknown',
       };
 
-      render(
+      renderWithProviders(
         <CharacterCard character={unknownCharacter} onSelect={mockOnSelect} />
       );
 
@@ -98,14 +116,28 @@ describe('CharacterCard', () => {
   });
 
   it('calls onSelect when card is clicked', () => {
-    render(
+    renderWithProviders(
       <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
     );
 
     const card = screen.getByText('Rick Sanchez').closest('div');
 
-    card?.click();
+    fireEvent.click(card!);
 
     expect(mockOnSelect).toHaveBeenCalledWith(mockCharacters[0].id);
+  });
+
+  it('does not call onSelect when selection button is clicked', () => {
+    renderWithProviders(
+      <CharacterCard character={mockCharacters[0]} onSelect={mockOnSelect} />
+    );
+
+    const selectButton = screen.getByRole('button', {
+      name: /select rick sanchez/i,
+    });
+
+    fireEvent.click(selectButton);
+
+    expect(mockOnSelect).not.toHaveBeenCalled();
   });
 });
