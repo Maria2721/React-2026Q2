@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Character } from '../ts/interfaces';
 
@@ -13,7 +13,27 @@ const initialState: SelectedState = {
 const selectedSlice = createSlice({
   name: 'selected',
   initialState,
-  reducers: {},
+  reducers: {
+    toggleSelected(state, action: PayloadAction<Character>) {
+      const exists = state.items.some((item) => item.id === action.payload.id);
+
+      if (exists) {
+        state.items = state.items.filter(
+          (item) => item.id !== action.payload.id
+        );
+
+        return;
+      }
+
+      state.items.push(action.payload);
+    },
+
+    clearSelected(state) {
+      state.items = [];
+    },
+  },
 });
+
+export const { toggleSelected, clearSelected } = selectedSlice.actions;
 
 export default selectedSlice.reducer;
