@@ -1,11 +1,25 @@
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-
 import { clearSelected } from '../../store/selectedSlice';
+
+import { generateCSV } from '../../utils/csv';
+import { downloadCSV } from '../../utils/downloadCSV';
 
 export function SelectedFlyout() {
   const dispatch = useAppDispatch();
 
   const selectedItems = useAppSelector((state) => state.selected.items);
+
+  const handleDownload = () => {
+    if (selectedItems.length === 0) {
+      return;
+    }
+
+    const csvContent = generateCSV(selectedItems);
+
+    const fileName = `${selectedItems.length}_items.csv`;
+
+    downloadCSV(csvContent, fileName);
+  };
 
   if (selectedItems.length === 0) {
     return null;
@@ -44,7 +58,7 @@ export function SelectedFlyout() {
 
           <button
             type="button"
-            onClick={() => console.log(selectedItems)}
+            onClick={handleDownload}
             className="cursor-pointer rounded-xl bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:scale-[1.02] hover:shadow-lg active:scale-[0.97]"
           >
             Download CSV
