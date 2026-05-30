@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Outlet } from 'react-router';
 
 import { useLocalStorage } from '../../hooks/useLocalStorage';
@@ -9,47 +9,27 @@ import { ResultsSection } from '../../components/ResultsSection/ResultsSection';
 import { Pagination } from '../../components/Pagination/Pagination';
 import { SelectedFlyout } from '../../components/SelectedFlyout/SelectedFlyout';
 
-import { fetchCharacters } from '../../api/characters';
-
-import type { AppState } from '../../ts/interfaces';
+import { useGetCharactersQuery } from '../../store/charactersApi';
 
 export default function HomePage() {
   const { value: searchQuery, setValue: setSearchQuery } =
     useLocalStorage<string>('search', '');
   const [inputValue, setInputValue] = useState(searchQuery);
-  const [results, setResults] = useState<AppState['results']>([]);
-  const [loading, setLoading] = useState<AppState['loading']>(false);
-  const [error, setError] = useState<AppState['error']>(null);
   const [crash, setCrash] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page') || 1);
-  const [totalPages, setTotalPages] = useState(1);
-
   const detailsId = searchParams.get('details');
 
-  useEffect(() => {
-    const loadCharacters = async () => {
-      setLoading(true);
-      setError(null);
+  const { data, isLoading, error } = useGetCharactersQuery({
+    query: searchQuery,
+    page,
+  });
+  const results = data?.results ?? [];
+  const totalPages = data?.pages ?? 1;
 
-      try {
-        const { results, pages } = await fetchCharacters(searchQuery, page);
-
-        setResults(results);
-        setTotalPages(pages);
-      } catch {
-        setError('Something went wrong. Try again.');
-        setResults([]);
-        setTotalPages(1);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCharacters();
-  }, [searchQuery, page]);
+  const errorMessage = error ? 'Something went wrong. Try again.' : null;
 
   const handleChange = useCallback((value: string) => {
     setInputValue(value);
@@ -116,12 +96,12 @@ export default function HomePage() {
 
           <ResultsSection
             results={results}
-            loading={loading}
-            error={error}
+            loading={isLoading}
+            error={errorMessage}
             onSelect={handleSelectCharacter}
           />
 
-          {!loading && results.length > 0 && (
+          {!isLoading && results.length > 0 && (
             <Pagination
               page={page}
               totalPages={totalPages}
