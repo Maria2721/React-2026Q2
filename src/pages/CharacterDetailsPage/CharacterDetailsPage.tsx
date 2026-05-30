@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router';
 
-import { fetchCharacterById } from '../../api/characters';
-import type { Character } from '../../ts/interfaces';
+import { useGetCharacterByIdQuery } from '../../store/charactersApi';
 
 type Context = {
   detailsId: string;
@@ -30,32 +28,13 @@ function CloseIcon() {
 
 export default function CharacterDetailsPage() {
   const { detailsId, closeDetails } = useOutletContext<Context>();
+  const {
+    data: character,
+    isLoading,
+    error,
+  } = useGetCharacterByIdQuery(detailsId);
 
-  const [character, setCharacter] = useState<Character | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!detailsId) return;
-
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await fetchCharacterById(detailsId);
-        setCharacter(data);
-      } catch {
-        setError('Failed to load character');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [detailsId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center p-6">
         <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -67,7 +46,7 @@ export default function CharacterDetailsPage() {
     return (
       <div className="p-6">
         <div className="text-red-500 bg-red-50 dark:text-red-200 dark:bg-red-900/20 p-3 rounded-lg">
-          {error}
+          Failed to load character
         </div>
       </div>
     );
