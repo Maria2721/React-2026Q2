@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { MemoryRouter } from 'react-router';
@@ -8,7 +8,11 @@ import { Provider } from 'react-redux';
 import HomePage from './HomePage';
 import { store } from '../../store/store';
 
-import { fetchCharacters } from '../../api/characters';
+import {
+  useGetCharactersQuery,
+  charactersApi,
+} from '../../store/charactersApi';
+
 import { mockCharacters } from '../../test-utils/mocks';
 
 import * as router from 'react-router';
@@ -20,9 +24,24 @@ import type {
   PaginationProps,
 } from '../../ts/interfaces';
 
-vi.mock('../../api/characters', () => ({
-  fetchCharacters: vi.fn(),
-}));
+import type { NavigateFunction, SetURLSearchParams } from 'react-router';
+
+// ---------------- RTK QUERY MOCK ----------------
+
+vi.mock('../../store/charactersApi', async () => {
+  const actual = await vi.importActual<
+    typeof import('../../store/charactersApi')
+  >('../../store/charactersApi');
+
+  return {
+    ...actual,
+    useGetCharactersQuery: vi.fn(),
+  };
+});
+
+const mockUseGetCharactersQuery = vi.mocked(useGetCharactersQuery);
+
+// ---------------- COMPONENT MOCKS ----------------
 
 vi.mock('../../components/HomeTitle/HomeTitle', () => ({
   HomeTitle: () => <div>HomeTitle</div>,
@@ -46,6 +65,7 @@ vi.mock('../../components/ResultsSection/ResultsSection', () => ({
       </div>
 
       <div data-testid="loading">{loading ? 'loading' : 'idle'}</div>
+
       <div data-testid="error">{error ?? 'no-error'}</div>
 
       <button onClick={() => onSelect(1)}>Select</button>
@@ -69,16 +89,42 @@ vi.mock('../../components/SelectedFlyout/SelectedFlyout', () => ({
   SelectedFlyout: () => <div>Flyout</div>,
 }));
 
-vi.mock('react-router', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router')>();
+// ---------------- ROUTER MOCK ----------------
 
-  return {
-    ...actual,
-  };
-});
+let mockSearchParams = new URLSearchParams('page=1');
 
-const setSearchParamsMock = vi.fn();
-const navigateMock = vi.fn();
+const setSearchParamsMock: SetURLSearchParams = vi.fn();
+const navigateMock: NavigateFunction = vi.fn();
+
+vi.spyOn(router, 'useSearchParams').mockImplementation(() => [
+  mockSearchParams,
+  setSearchParamsMock,
+]);
+
+vi.spyOn(router, 'useNavigate').mockReturnValue(navigateMock);
+
+// ---------------- HELPERS ----------------
+
+const createQueryResult = ({
+  results = [],
+  pages = 1,
+  isLoading = false,
+  error = undefined,
+}: {
+  results?: Character[];
+  pages?: number;
+  isLoading?: boolean;
+  error?: unknown;
+}) =>
+  ({
+    data: {
+      results,
+      pages,
+    },
+    isLoading,
+    isFetching: false,
+    error,
+  }) as never;
 
 const renderPage = () =>
   render(
@@ -89,81 +135,82 @@ const renderPage = () =>
     </Provider>
   );
 
+// ---------------- SETUP ----------------
+
 beforeEach(() => {
   vi.clearAllMocks();
+  mockSearchParams = new URLSearchParams('page=1');
 
-  vi.spyOn(router, 'useSearchParams').mockReturnValue([
-    new URLSearchParams('page=1'),
-    setSearchParamsMock,
-  ] as ReturnType<typeof router.useSearchParams>);
-
-  vi.spyOn(router, 'useNavigate').mockReturnValue(
-    navigateMock as ReturnType<typeof router.useNavigate>
-  );
-
+  mockUseGetCharactersQuery.mockReturnValue(createQueryResult({}));
   localStorage.clear();
 });
 
+// ---------------- TESTS ----------------
+
 describe('HomePage', () => {
-  it('renders page sections', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
-
-    renderPage();
-
-    expect(await screen.findByText('HomeTitle')).toBeInTheDocument();
-    expect(await screen.findByTestId('results')).toBeInTheDocument();
-  });
-
-  it('fetches characters on mount with correct args', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(fetchCharacters).toHaveBeenCalledWith('', 1);
-    });
-  });
-
-  it('passes fetched results to ResultsSection', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
-
-    renderPage();
-
-    expect(await screen.findByTestId('results')).toHaveTextContent(
-      'Rick Sanchez'
+  it('renders main UI', () => {
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        results: mockCharacters,
+        pages: 3,
+      })
     );
 
-    expect(await screen.findByTestId('results')).toHaveTextContent(
-      'Morty Smith'
-    );
+    renderPage();
+
+    expect(screen.getByText('HomeTitle')).toBeInTheDocument();
+    expect(screen.getByTestId('results')).toBeInTheDocument();
   });
 
-  it('handles fetch error', async () => {
-    vi.mocked(fetchCharacters).mockRejectedValue(new Error('API Error'));
+  it('calls query with correct params', () => {
+    renderPage();
+
+    expect(mockUseGetCharactersQuery).toHaveBeenCalledWith({
+      query: '',
+      page: 1,
+    });
+  });
+
+  it('renders results', () => {
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        results: mockCharacters,
+        pages: 3,
+      })
+    );
 
     renderPage();
 
-    expect(
-      await screen.findByText('Something went wrong. Try again.')
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('results')).toHaveTextContent('Rick Sanchez');
+    expect(screen.getByTestId('results')).toHaveTextContent('Morty Smith');
   });
 
-  it('updates input via SearchSection', async () => {
+  it('shows loading', () => {
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        isLoading: true,
+      })
+    );
+
+    renderPage();
+
+    expect(screen.getByTestId('loading')).toHaveTextContent('loading');
+  });
+
+  it('shows error message', () => {
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        error: { status: 500, data: {} },
+      })
+    );
+
+    renderPage();
+
+    expect(screen.getByTestId('error')).not.toHaveTextContent('no-error');
+  });
+
+  it('updates search input', async () => {
     const user = userEvent.setup();
-
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: [],
-      pages: 1,
-    });
 
     renderPage();
 
@@ -172,71 +219,100 @@ describe('HomePage', () => {
     expect(screen.getByTestId('search-value')).toHaveTextContent('Rick');
   });
 
-  it('triggers search and updates params', async () => {
+  it('triggers search', async () => {
     const user = userEvent.setup();
-
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
 
     renderPage();
 
     await user.click(screen.getByText('Change Search'));
     await user.click(screen.getByText('Search'));
 
-    expect(setSearchParamsMock).toHaveBeenCalledWith({ page: '1' });
+    expect(setSearchParamsMock).toHaveBeenCalledWith({
+      page: '1',
+    });
   });
 
-  it('does not trigger search if unchanged', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: [],
-      pages: 1,
-    });
+  it('does not search if unchanged', async () => {
+    const user = userEvent.setup();
 
     renderPage();
 
-    await waitFor(() => {
-      expect(fetchCharacters).toHaveBeenCalledTimes(1);
-    });
-
-    setSearchParamsMock.mockClear();
-
-    await userEvent.setup().click(screen.getByText('Search'));
+    await user.click(screen.getByText('Search'));
 
     expect(setSearchParamsMock).not.toHaveBeenCalled();
   });
 
-  it('renders pagination when results exist', async () => {
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
-
-    renderPage();
-
-    expect(await screen.findByTestId('page')).toHaveTextContent('1');
-    expect(await screen.findByTestId('total-pages')).toHaveTextContent('3');
-  });
-
-  it('handles next page click', async () => {
+  it('handles pagination next', async () => {
     const user = userEvent.setup();
 
-    vi.mocked(fetchCharacters).mockResolvedValue({
-      results: mockCharacters,
-      pages: 3,
-    });
+    mockSearchParams = new URLSearchParams('page=1');
+
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        results: mockCharacters,
+        pages: 3,
+      })
+    );
 
     renderPage();
 
-    const nextButton = await screen.findByRole('button', { name: /next/i });
+    await user.click(screen.getByRole('button', { name: /next/i }));
 
-    await user.click(nextButton);
-
-    await waitFor(() => {
-      expect(setSearchParamsMock).toHaveBeenCalledWith({
-        page: '2',
-      });
+    expect(setSearchParamsMock).toHaveBeenCalledWith({
+      page: '2',
     });
+  });
+
+  it('handles pagination prev', async () => {
+    const user = userEvent.setup();
+
+    mockSearchParams = new URLSearchParams('page=2');
+
+    mockUseGetCharactersQuery.mockReturnValue(
+      createQueryResult({
+        results: mockCharacters,
+        pages: 3,
+      })
+    );
+
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: /prev/i }));
+
+    expect(setSearchParamsMock).toHaveBeenCalledWith({
+      page: '1',
+    });
+  });
+
+  it('navigates on select', async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await user.click(screen.getByText('Select'));
+
+    expect(navigateMock).toHaveBeenCalled();
+  });
+
+  it('invalidates cache on refresh', async () => {
+    const user = userEvent.setup();
+
+    const spy = vi.spyOn(charactersApi.util, 'invalidateTags');
+
+    renderPage();
+
+    await user.click(screen.getByText(/refresh list/i));
+
+    expect(spy).toHaveBeenCalledWith(['Characters']);
+  });
+
+  it('handles crash error', async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await expect(async () => {
+      await user.click(screen.getByText(/test error/i));
+    }).rejects.toThrow('Test error');
   });
 });

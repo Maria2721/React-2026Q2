@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { SelectedFlyout } from './SelectedFlyout';
 
 import { mockCharacters } from '../../test-utils/mocks';
+import { createMockState } from '../../test-utils/createMockState';
 
 import * as csvUtils from '../../utils/generateCSV';
 import * as downloadUtils from '../../utils/downloadCSV';
@@ -30,7 +31,7 @@ beforeEach(() => {
 describe('SelectedFlyout', () => {
   it('does not render when selected items are empty', () => {
     mockedUseAppSelector.mockImplementation((selector) =>
-      selector({ selected: { items: [] } })
+      selector(createMockState([]))
     );
 
     const { container } = render(<SelectedFlyout />);
@@ -40,7 +41,7 @@ describe('SelectedFlyout', () => {
 
   it('renders flyout with correct count and text', () => {
     mockedUseAppSelector.mockImplementation((selector) =>
-      selector({ selected: { items: mockCharacters } })
+      selector(createMockState(mockCharacters))
     );
 
     render(<SelectedFlyout />);
@@ -54,7 +55,7 @@ describe('SelectedFlyout', () => {
     const user = userEvent.setup();
 
     mockedUseAppSelector.mockImplementation((selector) =>
-      selector({ selected: { items: mockCharacters } })
+      selector(createMockState(mockCharacters))
     );
 
     render(<SelectedFlyout />);
@@ -71,7 +72,7 @@ describe('SelectedFlyout', () => {
     const downloadSpy = vi.spyOn(downloadUtils, 'downloadCSV');
 
     mockedUseAppSelector.mockImplementation((selector) =>
-      selector({ selected: { items: mockCharacters } })
+      selector(createMockState(mockCharacters))
     );
 
     render(<SelectedFlyout />);
@@ -85,7 +86,7 @@ describe('SelectedFlyout', () => {
 
   it('does not render when items are empty (duplicate safety check)', () => {
     mockedUseAppSelector.mockImplementation((selector) =>
-      selector({ selected: { items: [] } })
+      selector(createMockState([]))
     );
 
     const { container } = render(<SelectedFlyout />);

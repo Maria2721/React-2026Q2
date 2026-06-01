@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Outlet } from 'react-router';
 
 import { useLocalStorage } from '../../hooks/useLocalStorage';
@@ -9,47 +9,43 @@ import { ResultsSection } from '../../components/ResultsSection/ResultsSection';
 import { Pagination } from '../../components/Pagination/Pagination';
 import { SelectedFlyout } from '../../components/SelectedFlyout/SelectedFlyout';
 
-import { fetchCharacters } from '../../api/characters';
+import {
+  charactersApi,
+  useGetCharactersQuery,
+} from '../../store/charactersApi';
 
-import type { AppState } from '../../ts/interfaces';
+import { useAppDispatch } from '../../store/hooks';
+
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 export default function HomePage() {
   const { value: searchQuery, setValue: setSearchQuery } =
     useLocalStorage<string>('search', '');
+
   const [inputValue, setInputValue] = useState(searchQuery);
-  const [results, setResults] = useState<AppState['results']>([]);
-  const [loading, setLoading] = useState<AppState['loading']>(false);
-  const [error, setError] = useState<AppState['error']>(null);
   const [crash, setCrash] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get('page') || 1);
-  const [totalPages, setTotalPages] = useState(1);
 
+  const page = Number(searchParams.get('page') || 1);
   const detailsId = searchParams.get('details');
 
-  useEffect(() => {
-    const loadCharacters = async () => {
-      setLoading(true);
-      setError(null);
+  const { data, isLoading, isFetching, error } = useGetCharactersQuery({
+    query: searchQuery,
+    page,
+  });
 
-      try {
-        const { results, pages } = await fetchCharacters(searchQuery, page);
+  const results = data?.results ?? [];
+  const totalPages = data?.pages ?? 1;
 
-        setResults(results);
-        setTotalPages(pages);
-      } catch {
-        setError('Something went wrong. Try again.');
-        setResults([]);
-        setTotalPages(1);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const errorMessage = error ? getErrorMessage(error) : null;
 
-    loadCharacters();
-  }, [searchQuery, page]);
+  const dispatch = useAppDispatch();
+
+  const handleRefreshList = () => {
+    dispatch(charactersApi.util.invalidateTags(['Characters']));
+  };
 
   const handleChange = useCallback((value: string) => {
     setInputValue(value);
@@ -114,14 +110,23 @@ export default function HomePage() {
             onSearch={handleSearch}
           />
 
+          <div className="flex justify-end">
+            <button
+              onClick={handleRefreshList}
+              className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+            >
+              Refresh List
+            </button>
+          </div>
+
           <ResultsSection
             results={results}
-            loading={loading}
-            error={error}
+            loading={isLoading || isFetching}
+            error={errorMessage}
             onSelect={handleSelectCharacter}
           />
 
-          {!loading && results.length > 0 && (
+          {!(isLoading || isFetching) && results.length > 0 && (
             <Pagination
               page={page}
               totalPages={totalPages}

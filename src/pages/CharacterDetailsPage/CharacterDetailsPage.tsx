@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router';
 
-import { fetchCharacterById } from '../../api/characters';
-import type { Character } from '../../ts/interfaces';
+import {
+  charactersApi,
+  useGetCharacterByIdQuery,
+} from '../../store/charactersApi';
+import { useAppDispatch } from '../../store/hooks';
+
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 type Context = {
   detailsId: string;
@@ -30,32 +34,25 @@ function CloseIcon() {
 
 export default function CharacterDetailsPage() {
   const { detailsId, closeDetails } = useOutletContext<Context>();
+  const {
+    data: character,
+    isLoading,
+    error,
+  } = useGetCharacterByIdQuery(detailsId);
 
-  const [character, setCharacter] = useState<Character | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const handleRefreshCharacter = () => {
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: detailsId,
+        },
+      ])
+    );
+  };
 
-  useEffect(() => {
-    if (!detailsId) return;
-
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await fetchCharacterById(detailsId);
-        setCharacter(data);
-      } catch {
-        setError('Failed to load character');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [detailsId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center p-6">
         <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -67,7 +64,7 @@ export default function CharacterDetailsPage() {
     return (
       <div className="p-6">
         <div className="text-red-500 bg-red-50 dark:text-red-200 dark:bg-red-900/20 p-3 rounded-lg">
-          {error}
+          {getErrorMessage(error)}
         </div>
       </div>
     );
@@ -124,6 +121,7 @@ export default function CharacterDetailsPage() {
     >
       <button
         onClick={closeDetails}
+        aria-label="close"
         className="
           absolute top-5 right-5 z-20 flex items-center justify-center
           w-10 h-10 rounded-full border backdrop-blur-sm
@@ -137,6 +135,27 @@ export default function CharacterDetailsPage() {
         "
       >
         <CloseIcon />
+      </button>
+      <button
+        onClick={handleRefreshCharacter}
+        aria-label="refresh"
+        className="
+          absolute top-5 right-18 z-20
+          px-3 py-2 rounded-full
+          border backdrop-blur-sm
+          bg-white/90 border-gray-200
+          text-sm font-medium
+          transition-all
+          hover:scale-105
+          hover:shadow-md
+          cursor-pointer
+
+          dark:bg-gray-800/60
+          dark:border-gray-700
+          dark:text-gray-200
+        "
+      >
+        Refresh
       </button>
 
       <div className="relative z-10">
