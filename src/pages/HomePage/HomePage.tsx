@@ -16,6 +16,8 @@ import {
 
 import { useAppDispatch } from '../../store/hooks';
 
+import { getErrorMessage } from '../../utils/getErrorMessage';
+
 export default function HomePage() {
   const { value: searchQuery, setValue: setSearchQuery } =
     useLocalStorage<string>('search', '');
@@ -37,7 +39,7 @@ export default function HomePage() {
   const results = data?.results ?? [];
   const totalPages = data?.pages ?? 1;
 
-  const errorMessage = error ? 'Something went wrong. Try again.' : null;
+  const errorMessage = error ? getErrorMessage(error) : null;
 
   const dispatch = useAppDispatch();
 

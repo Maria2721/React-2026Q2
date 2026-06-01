@@ -6,6 +6,8 @@ import {
 } from '../../store/charactersApi';
 import { useAppDispatch } from '../../store/hooks';
 
+import { getErrorMessage } from '../../utils/getErrorMessage';
+
 type Context = {
   detailsId: string;
   closeDetails: () => void;
@@ -62,7 +64,7 @@ export default function CharacterDetailsPage() {
     return (
       <div className="p-6">
         <div className="text-red-500 bg-red-50 dark:text-red-200 dark:bg-red-900/20 p-3 rounded-lg">
-          Failed to load character
+          {getErrorMessage(error)}
         </div>
       </div>
     );
@@ -119,6 +121,7 @@ export default function CharacterDetailsPage() {
     >
       <button
         onClick={closeDetails}
+        aria-label="close"
         className="
           absolute top-5 right-5 z-20 flex items-center justify-center
           w-10 h-10 rounded-full border backdrop-blur-sm
@@ -135,6 +138,7 @@ export default function CharacterDetailsPage() {
       </button>
       <button
         onClick={handleRefreshCharacter}
+        aria-label="refresh"
         className="
           absolute top-5 right-18 z-20
           px-3 py-2 rounded-full

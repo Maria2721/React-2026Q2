@@ -73,52 +73,56 @@ describe('CharacterDetailsPage', () => {
     );
 
     render(<CharacterDetailsPage />);
+
     expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
   it('renders character details after successful fetch', async () => {
     render(<CharacterDetailsPage />);
 
-    expect(await screen.findByText(mockCharacters[0].name)).toBeInTheDocument();
+    const character = mockCharacters[0];
 
-    expect(screen.getByText(mockCharacters[0].status)).toBeInTheDocument();
-    expect(screen.getByText(mockCharacters[0].species)).toBeInTheDocument();
-    expect(screen.getByText(mockCharacters[0].gender)).toBeInTheDocument();
-    expect(screen.getByText(mockCharacters[0].origin.name)).toBeInTheDocument();
-    expect(
-      screen.getByText(mockCharacters[0].location.name)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(character.name)).toBeInTheDocument();
+
+    expect(screen.getByText(character.status)).toBeInTheDocument();
+    expect(screen.getByText(character.species)).toBeInTheDocument();
+    expect(screen.getByText(character.gender)).toBeInTheDocument();
+    expect(screen.getByText(character.origin.name)).toBeInTheDocument();
+    expect(screen.getByText(character.location.name)).toBeInTheDocument();
   });
 
   it('renders character image', async () => {
     render(<CharacterDetailsPage />);
 
-    const image = await screen.findByAltText(mockCharacters[0].name);
+    const character = mockCharacters[0];
 
-    expect(image).toHaveAttribute('src', mockCharacters[0].image);
-    expect(image).toHaveAttribute('alt', mockCharacters[0].name);
+    const image = await screen.findByAltText(character.name);
+
+    expect(image).toHaveAttribute('src', character.image);
+    expect(image).toHaveAttribute('alt', character.name);
   });
 
   it('renders episodes count', async () => {
     render(<CharacterDetailsPage />);
 
+    const character = mockCharacters[0];
+
     expect(
-      await screen.findByText(String(mockCharacters[0].episode.length))
+      await screen.findByText(String(character.episode.length))
     ).toBeInTheDocument();
   });
 
   it('renders error state when query fails', async () => {
     mockUseGetCharacterByIdQuery.mockReturnValue(
       createCharacterQueryResult({
-        error: { status: 500 },
+        error: { status: 500, message: 'Server error' },
       })
     );
 
     render(<CharacterDetailsPage />);
 
-    expect(
-      await screen.findByText('Failed to load character')
-    ).toBeInTheDocument();
+    // теперь не хардкодим текст — проверяем через util fallback
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 
   it('calls closeDetails when close button clicked', async () => {
@@ -128,8 +132,9 @@ describe('CharacterDetailsPage', () => {
 
     await screen.findByText(mockCharacters[0].name);
 
-    const buttons = screen.getAllByRole('button');
-    const closeButton = buttons[0]; // first button = close
+    const closeButton = screen.getByRole('button', {
+      name: /close/i,
+    });
 
     await user.click(closeButton);
 
@@ -143,8 +148,9 @@ describe('CharacterDetailsPage', () => {
 
     await screen.findByText(mockCharacters[0].name);
 
-    const buttons = screen.getAllByRole('button');
-    const refreshButton = buttons[1]; // second button = refresh
+    const refreshButton = screen.getByRole('button', {
+      name: /refresh/i,
+    });
 
     await user.click(refreshButton);
 
