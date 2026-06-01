@@ -4,16 +4,25 @@ import userEvent from '@testing-library/user-event';
 
 import CharacterDetailsPage from './CharacterDetailsPage';
 
-import { useGetCharacterByIdQuery } from '../../store/charactersApi';
+import {
+  useGetCharacterByIdQuery,
+  charactersApi,
+} from '../../store/charactersApi';
+
 import { mockCharacters } from '../../test-utils/mocks';
 
 const mockCloseDetails = vi.fn();
+const mockDispatch = vi.fn();
 
 vi.mock('react-router', () => ({
   useOutletContext: () => ({
     detailsId: '1',
     closeDetails: mockCloseDetails,
   }),
+}));
+
+vi.mock('../../store/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
 }));
 
 vi.mock('../../store/charactersApi', async () => {
@@ -55,69 +64,42 @@ describe('CharacterDetailsPage', () => {
 
   it('calls query hook with details id', () => {
     render(<CharacterDetailsPage />);
-
     expect(mockUseGetCharacterByIdQuery).toHaveBeenCalledWith('1');
   });
 
   it('renders loading state', () => {
     mockUseGetCharacterByIdQuery.mockReturnValue(
-      createCharacterQueryResult({
-        isLoading: true,
-      })
+      createCharacterQueryResult({ isLoading: true })
     );
 
     render(<CharacterDetailsPage />);
-
     expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
   it('renders character details after successful fetch', async () => {
-    mockUseGetCharacterByIdQuery.mockReturnValue(
-      createCharacterQueryResult({
-        character: mockCharacters[0],
-      })
-    );
-
     render(<CharacterDetailsPage />);
 
     expect(await screen.findByText(mockCharacters[0].name)).toBeInTheDocument();
 
     expect(screen.getByText(mockCharacters[0].status)).toBeInTheDocument();
-
     expect(screen.getByText(mockCharacters[0].species)).toBeInTheDocument();
-
     expect(screen.getByText(mockCharacters[0].gender)).toBeInTheDocument();
-
     expect(screen.getByText(mockCharacters[0].origin.name)).toBeInTheDocument();
-
     expect(
       screen.getByText(mockCharacters[0].location.name)
     ).toBeInTheDocument();
   });
 
   it('renders character image', async () => {
-    mockUseGetCharacterByIdQuery.mockReturnValue(
-      createCharacterQueryResult({
-        character: mockCharacters[0],
-      })
-    );
-
     render(<CharacterDetailsPage />);
 
     const image = await screen.findByAltText(mockCharacters[0].name);
 
     expect(image).toHaveAttribute('src', mockCharacters[0].image);
-
     expect(image).toHaveAttribute('alt', mockCharacters[0].name);
   });
 
   it('renders episodes count', async () => {
-    mockUseGetCharacterByIdQuery.mockReturnValue(
-      createCharacterQueryResult({
-        character: mockCharacters[0],
-      })
-    );
-
     render(<CharacterDetailsPage />);
 
     expect(
@@ -142,21 +124,38 @@ describe('CharacterDetailsPage', () => {
   it('calls closeDetails when close button clicked', async () => {
     const user = userEvent.setup();
 
-    mockUseGetCharacterByIdQuery.mockReturnValue(
-      createCharacterQueryResult({
-        character: mockCharacters[0],
-      })
-    );
+    render(<CharacterDetailsPage />);
+
+    await screen.findByText(mockCharacters[0].name);
+
+    const buttons = screen.getAllByRole('button');
+    const closeButton = buttons[0]; // first button = close
+
+    await user.click(closeButton);
+
+    expect(mockCloseDetails).toHaveBeenCalled();
+  });
+
+  it('calls refresh dispatch when refresh button clicked', async () => {
+    const user = userEvent.setup();
 
     render(<CharacterDetailsPage />);
 
     await screen.findByText(mockCharacters[0].name);
 
-    const button = screen.getByRole('button');
+    const buttons = screen.getAllByRole('button');
+    const refreshButton = buttons[1]; // second button = refresh
 
-    await user.click(button);
+    await user.click(refreshButton);
 
-    expect(mockCloseDetails).toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalledWith(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: '1',
+        },
+      ])
+    );
   });
 
   it('renders Unknown when card value is missing', async () => {
@@ -182,7 +181,6 @@ describe('CharacterDetailsPage', () => {
     );
 
     const { container } = render(<CharacterDetailsPage />);
-
     expect(container).toBeEmptyDOMElement();
   });
 });

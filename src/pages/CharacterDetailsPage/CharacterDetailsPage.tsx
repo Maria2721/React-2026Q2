@@ -1,6 +1,10 @@
 import { useOutletContext } from 'react-router';
 
-import { useGetCharacterByIdQuery } from '../../store/charactersApi';
+import {
+  charactersApi,
+  useGetCharacterByIdQuery,
+} from '../../store/charactersApi';
+import { useAppDispatch } from '../../store/hooks';
 
 type Context = {
   detailsId: string;
@@ -33,6 +37,18 @@ export default function CharacterDetailsPage() {
     isLoading,
     error,
   } = useGetCharacterByIdQuery(detailsId);
+
+  const dispatch = useAppDispatch();
+  const handleRefreshCharacter = () => {
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: detailsId,
+        },
+      ])
+    );
+  };
 
   if (isLoading) {
     return (
@@ -116,6 +132,26 @@ export default function CharacterDetailsPage() {
         "
       >
         <CloseIcon />
+      </button>
+      <button
+        onClick={handleRefreshCharacter}
+        className="
+          absolute top-5 right-18 z-20
+          px-3 py-2 rounded-full
+          border backdrop-blur-sm
+          bg-white/90 border-gray-200
+          text-sm font-medium
+          transition-all
+          hover:scale-105
+          hover:shadow-md
+          cursor-pointer
+
+          dark:bg-gray-800/60
+          dark:border-gray-700
+          dark:text-gray-200
+        "
+      >
+        Refresh
       </button>
 
       <div className="relative z-10">
