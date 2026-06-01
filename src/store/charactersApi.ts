@@ -1,6 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import type { Character, ApiResponse } from '../ts/interfaces';
+import type { Character } from '../ts/interfaces';
+
+import {
+  buildCharactersQuery,
+  transformCharactersResponse,
+} from './charactersApi.helpers';
 
 const cacheTTL = Number(import.meta.env.VITE_CACHE_TTL ?? 60);
 
@@ -18,22 +23,9 @@ export const charactersApi = createApi({
       { results: Character[]; pages: number },
       { query: string; page: number }
     >({
-      query: ({ query, page }) => {
-        const params = new URLSearchParams();
+      query: buildCharactersQuery,
 
-        if (query) {
-          params.set('name', query);
-        }
-
-        params.set('page', String(page));
-
-        return `character?${params.toString()}`;
-      },
-
-      transformResponse: (response: ApiResponse) => ({
-        results: response.results ?? [],
-        pages: response.info?.pages ?? 1,
-      }),
+      transformResponse: transformCharactersResponse,
 
       keepUnusedDataFor: cacheTTL,
 
