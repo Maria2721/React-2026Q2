@@ -7,11 +7,11 @@ export interface Submission {
   formType: FormType;
   name: string;
   age: number;
-  email: string;
   gender: Gender;
   country: string;
   image: string;
+  email: string;
   password: string;
-  acceptedTerms: boolean;
+  terms: boolean;
   createdAt: number;
 }

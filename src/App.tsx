@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Modal } from './components/Modal/Modal';
+import { UncontrolledForm } from './components/UncontrolledForm/UncontrolledForm';
 
 import type { FormType } from './types/form';
 
@@ -45,7 +46,9 @@ export default function App() {
           onClose={() => setModalType(null)}
         >
           <div className="text-sm text-gray-600">
-            {modalType === 'uncontrolled' && <p>Uncontrolled Form goes here</p>}
+            {modalType === 'uncontrolled' && (
+              <UncontrolledForm onSuccess={() => setModalType(null)} />
+            )}
 
             {modalType === 'rhf' && <p>React Hook Form goes here</p>}
           </div>

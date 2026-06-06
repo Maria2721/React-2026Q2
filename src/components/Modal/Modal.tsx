@@ -132,23 +132,24 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby="modal-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-2xl rounded-xl bg-white shadow-xl flex flex-col max-h-[90vh]"
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-200 p-6">
           <h2 id="modal-title" className="text-xl font-semibold">
             {title}
           </h2>
+
           <button
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="cursor-pointer text-2xl"
+            className="cursor-pointer text-2xl text-gray-600 hover:text-black transition"
           >
             <CloseIcon />
           </button>
         </div>
 
-        {children}
+        <div className="overflow-y-auto p-6">{children}</div>
       </div>
     </div>,
     document.body
