@@ -5,6 +5,8 @@ import clsx from 'clsx';
 import { useAppSelector } from '../../store/hooks';
 import { formSchema } from '../../validation/formSchema';
 import { toBase64 } from '../../utils/toBase64';
+import { getPasswordStrength } from '../../utils/getPasswordStrength';
+import type { PasswordStrength } from '../../utils/getPasswordStrength';
 
 type FormProps = {
   onSuccess: () => void;
@@ -28,6 +30,8 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
   const countries = useAppSelector((state) => state.countries.items);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [passwordStrength, setPasswordStrength] =
+    useState<PasswordStrength>('');
 
   const getInputClassName = (hasError: boolean) =>
     clsx(
@@ -258,10 +262,31 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
           id="password"
           name="password"
           type="password"
+          onChange={(e) =>
+            setPasswordStrength(getPasswordStrength(e.target.value))
+          }
           aria-invalid={Boolean(errors.password)}
           aria-describedby="password-error"
           className={getInputClassName(Boolean(errors.password))}
         />
+        <p className="mt-1 text-xs text-gray-500">
+          {passwordStrength ? (
+            <>
+              Password strength:{' '}
+              <span
+                className={clsx(
+                  passwordStrength === 'Weak' && 'text-red-500',
+                  passwordStrength === 'Medium' && 'text-yellow-500',
+                  passwordStrength === 'Strong' && 'text-green-600'
+                )}
+              >
+                {passwordStrength}
+              </span>
+            </>
+          ) : (
+            'Start typing password...'
+          )}
+        </p>
 
         <p id="password-error" className={errorClassName}>
           {errors.password}
