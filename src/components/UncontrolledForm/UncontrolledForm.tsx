@@ -4,9 +4,22 @@ import clsx from 'clsx';
 
 import { useAppSelector } from '../../store/hooks';
 import { formSchema } from '../../validation/formSchema';
+import { toBase64 } from '../../utils/toBase64';
 
 type FormProps = {
   onSuccess: () => void;
+};
+
+type ValidFormData = {
+  image: File | null;
+  name: string;
+  age: string;
+  email: string;
+  gender: string;
+  country: string;
+  password: string;
+  confirmPassword: string;
+  terms: boolean;
 };
 
 export function UncontrolledForm({ onSuccess }: FormProps) {
@@ -25,7 +38,20 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
     );
   const errorClassName = 'min-h-5 text-xs text-red-500';
 
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+  const convertImage = async (data: ValidFormData) => {
+    let imageBase64: string | null = null;
+
+    if (data.image instanceof File && data.image.size > 0) {
+      imageBase64 = await toBase64(data.image);
+    }
+
+    return {
+      ...data,
+      image: imageBase64,
+    };
+  };
+
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(formRef.current!);
@@ -61,7 +87,9 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
       return;
     }
 
-    console.log('RAW DATA:', raw);
+    const finalData = await convertImage(result.data);
+
+    console.log('FINAL:', finalData);
     setErrors({});
     onSuccess();
   };
@@ -184,12 +212,7 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
         </p>
       </div>
 
-      <div
-        className={clsx(
-          'rounded-lg border',
-          errors.image ? 'border-red-500' : 'border-transparent'
-        )}
-      >
+      <div>
         <label htmlFor="image" className="text-sm font-medium text-gray-700">
           Image
         </label>
