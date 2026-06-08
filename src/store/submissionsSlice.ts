@@ -20,9 +20,15 @@ const submissionsSlice = createSlice({
     ) => {
       state.items.unshift(action.payload);
     },
+    markAsOld: (state, action) => {
+      const item = state.items.find((i) => i.id === action.payload);
+      if (item) {
+        item.isNew = false;
+      }
+    },
   },
 });
 
-export const { addSubmission } = submissionsSlice.actions;
+export const { addSubmission, markAsOld } = submissionsSlice.actions;
 
 export const submissionsReducer = submissionsSlice.reducer;

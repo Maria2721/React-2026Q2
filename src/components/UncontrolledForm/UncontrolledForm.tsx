@@ -2,11 +2,14 @@ import { useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import clsx from 'clsx';
 
-import { useAppSelector } from '../../store/hooks';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { addSubmission, markAsOld } from '../../store/submissionsSlice';
+
 import { formSchema } from '../../validation/formSchema';
 import { toBase64 } from '../../utils/toBase64';
 import { getPasswordStrength } from '../../utils/getPasswordStrength';
 import type { PasswordStrength } from '../../utils/getPasswordStrength';
+import type { Submission, Gender } from '../../types/form';
 
 type FormProps = {
   onSuccess: () => void;
@@ -28,6 +31,7 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const countries = useAppSelector((state) => state.countries.items);
+  const dispatch = useAppDispatch();
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordStrength, setPasswordStrength] =
@@ -92,9 +96,38 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
     }
 
     const finalData = await convertImage(result.data);
+    const genderRaw = formData.get('gender');
 
-    console.log('FINAL:', finalData);
+    const gender: Gender =
+      genderRaw === 'male' || genderRaw === 'female' || genderRaw === 'other'
+        ? genderRaw
+        : 'other';
+
+    const submission: Submission = {
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      formType: 'uncontrolled',
+      image: finalData.image,
+      name: finalData.name,
+      age: finalData.age,
+      email: finalData.email,
+      gender: gender,
+      country: finalData.country,
+      password: finalData.password,
+      confirmPassword: finalData.confirmPassword,
+      terms: finalData.terms,
+      isNew: true,
+    };
+
+    dispatch(addSubmission(submission));
+
+    setTimeout(() => {
+      dispatch(markAsOld(submission.id));
+    }, 3000);
+
     setErrors({});
+    formRef.current?.reset();
+    setPasswordStrength('');
     onSuccess();
   };
 

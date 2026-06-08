@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Modal } from './components/Modal/Modal';
 import { UncontrolledForm } from './components/UncontrolledForm/UncontrolledForm';
+import { SubmissionSection } from './components/SubmissionSection/SubmissionSection';
 
 import type { FormType } from './types/form';
 
@@ -31,14 +32,7 @@ export default function App() {
           </button>
         </div>
 
-        <div className="mt-10 rounded-xl border border-dashed border-gray-300 bg-white p-6">
-          <h2 className="mb-2 text-lg font-medium text-gray-800">
-            Submission Cards
-          </h2>
-          <p className="text-sm text-gray-500">
-            Submitted forms will appear here
-          </p>
-        </div>
+        <SubmissionSection />
 
         <Modal
           isOpen={isOpen}
