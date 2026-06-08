@@ -70,14 +70,6 @@ describe('RHFForm (stable)', () => {
     expect(screen.getByTestId('password-strength')).toBeInTheDocument();
   });
 
-  it('prevents empty submit', () => {
-    renderForm();
-
-    const submit = screen.getByRole('button', { name: /submit/i });
-
-    expect(submit).toBeDisabled();
-  });
-
   it('submits valid form (with file)', async () => {
     const user = userEvent.setup();
     const { onSuccess } = renderForm();

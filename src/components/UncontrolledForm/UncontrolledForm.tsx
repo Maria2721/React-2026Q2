@@ -20,7 +20,7 @@ type ValidFormData = {
   name: string;
   age: string;
   email: string;
-  gender: Gender;
+  gender: string;
   country: string;
   password: string;
   confirmPassword: string;
@@ -187,8 +187,12 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
             errors.gender ? 'border-red-500' : 'border-transparent'
           )}
         >
-          <label className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500">
+          <label
+            htmlFor="male"
+            className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500"
+          >
             <input
+              id="male"
               type="radio"
               name="gender"
               value="male"
@@ -197,8 +201,12 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
             Male
           </label>
 
-          <label className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500">
+          <label
+            htmlFor="female"
+            className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500"
+          >
             <input
+              id="female"
               type="radio"
               name="gender"
               value="female"
@@ -207,8 +215,12 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
             Female
           </label>
 
-          <label className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500">
+          <label
+            htmlFor="other"
+            className="inline-flex w-fit min-w-27.5 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 focus-within:border-blue-500"
+          >
             <input
+              id="other"
               type="radio"
               name="gender"
               value="other"
@@ -229,8 +241,8 @@ export function UncontrolledForm({ onSuccess }: FormProps) {
         </label>
 
         <input
-          list="countries"
           id="country"
+          list="countries"
           name="country"
           aria-invalid={Boolean(errors.country)}
           aria-describedby="country-error"

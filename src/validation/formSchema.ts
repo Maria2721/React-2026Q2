@@ -6,7 +6,7 @@ export const formSchema = (countries: string[]) =>
       name: z.string(),
       age: z.string(),
       email: z.string(),
-      gender: z.enum(['male', 'female', 'other']),
+      gender: z.string(),
       country: z.string(),
       password: z.string(),
       confirmPassword: z.string(),

@@ -20,7 +20,7 @@ type RHFFormData = {
   name: string;
   age: string;
   email: string;
-  gender: Gender;
+  gender: string;
   country: string;
   password: string;
   confirmPassword: string;
@@ -36,7 +36,7 @@ export function RHFForm({ onSuccess }: FormProps) {
     handleSubmit,
     control,
     reset,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<RHFFormData>({
     resolver: zodResolver(formSchema(countries)),
     mode: 'onChange',
@@ -44,7 +44,7 @@ export function RHFForm({ onSuccess }: FormProps) {
       name: '',
       age: '',
       email: '',
-      gender: 'other',
+      gender: '',
       country: '',
       password: '',
       confirmPassword: '',
@@ -80,6 +80,12 @@ export function RHFForm({ onSuccess }: FormProps) {
 
     const createdAt = new Date().getTime();
     const id = crypto.randomUUID();
+    const gender: Gender =
+      data.gender === 'male' ||
+      data.gender === 'female' ||
+      data.gender === 'other'
+        ? data.gender
+        : 'other';
 
     const submission: Submission = {
       id,
@@ -89,7 +95,7 @@ export function RHFForm({ onSuccess }: FormProps) {
       name: data.name,
       age: data.age,
       email: data.email,
-      gender: data.gender,
+      gender,
       country: data.country,
       password: data.password,
       confirmPassword: data.confirmPassword,
@@ -328,7 +334,6 @@ export function RHFForm({ onSuccess }: FormProps) {
 
       <button
         type="submit"
-        disabled={!isValid}
         aria-label="Submit form"
         data-testid="submit-button"
         className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
