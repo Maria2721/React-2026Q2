@@ -11,6 +11,7 @@ type Props = {
 export function SubmissionCard({ submission }: Props) {
   return (
     <div
+      data-testid="submission-card"
       className={clsx(
         'group rounded-xl border border-gray-800 bg-white p-5 shadow-sm transition-all duration-200',
         'hover:-translate-y-0.5 hover:shadow-md',

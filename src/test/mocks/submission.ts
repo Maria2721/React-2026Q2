@@ -15,3 +15,10 @@ export const mockSubmission: Submission = {
   createdAt: 1740000000000,
   isNew: true,
 };
+
+export const createMockSubmission = (
+  overrides?: Partial<Submission>
+): Submission => ({
+  ...mockSubmission,
+  ...overrides,
+});
