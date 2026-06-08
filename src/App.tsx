@@ -5,6 +5,7 @@ import { UncontrolledForm } from './components/UncontrolledForm/UncontrolledForm
 import { SubmissionSection } from './components/SubmissionSection/SubmissionSection';
 
 import type { FormType } from './types/form';
+import { RHFForm } from './components/RHFForm/RHFForm';
 
 export default function App() {
   const [modalType, setModalType] = useState<FormType>(null);
@@ -44,7 +45,9 @@ export default function App() {
               <UncontrolledForm onSuccess={() => setModalType(null)} />
             )}
 
-            {modalType === 'rhf' && <p>React Hook Form goes here</p>}
+            {modalType === 'rhf' && (
+              <RHFForm onSuccess={() => setModalType(null)} />
+            )}
           </div>
         </Modal>
       </div>

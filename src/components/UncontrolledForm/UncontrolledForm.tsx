@@ -20,7 +20,7 @@ type ValidFormData = {
   name: string;
   age: string;
   email: string;
-  gender: string;
+  gender: Gender;
   country: string;
   password: string;
   confirmPassword: string;

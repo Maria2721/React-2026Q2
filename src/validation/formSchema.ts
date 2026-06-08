@@ -6,7 +6,7 @@ export const formSchema = (countries: string[]) =>
       name: z.string(),
       age: z.string(),
       email: z.string(),
-      gender: z.string(),
+      gender: z.enum(['male', 'female', 'other']),
       country: z.string(),
       password: z.string(),
       confirmPassword: z.string(),
@@ -132,7 +132,14 @@ export const formSchema = (countries: string[]) =>
         });
       }
 
-      const file = data.image;
+      const rawFile = data.image;
+
+      const file =
+        rawFile instanceof File
+          ? rawFile
+          : rawFile instanceof FileList
+            ? rawFile[0]
+            : null;
 
       if (!(file instanceof File)) {
         ctx.addIssue({
