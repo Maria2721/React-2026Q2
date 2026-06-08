@@ -122,6 +122,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   return createPortal(
     <div
+      data-testid="modal-overlay"
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     >
