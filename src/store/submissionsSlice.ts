@@ -20,7 +20,7 @@ const submissionsSlice = createSlice({
     ) => {
       state.items.unshift(action.payload);
     },
-    markAsOld: (state, action) => {
+    markAsOld: (state, action: PayloadAction<string>) => {
       const item = state.items.find((i) => i.id === action.payload);
       if (item) {
         item.isNew = false;
