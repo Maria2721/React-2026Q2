@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { List } from 'react-virtualized';
+import type { ListRowRenderer } from 'react-virtualized';
 import type { Country } from '../../types';
 import { CountryCard } from '../country-card/country-card';
 import { getPopulationForYear, createYearDataMap } from '../../utils/data-transformers';
@@ -54,16 +56,33 @@ export const CountryList = ({
       .map((item) => item.country);
   }, [countries, searchQuery, selectedRegion, selectedYear, sortField, sortOrder]);
 
-  return (
-    <div className={styles.countryList}>
-      {filteredCountries.map((country) => (
+  const rowRenderer: ListRowRenderer = ({ index, key, style }) => {
+    const country = filteredCountries[index];
+
+    if (!country) {
+      return null;
+    }
+
+    return (
+      <div key={key} style={style}>
         <CountryCard
-          key={country.id}
           country={country}
           selectedYear={selectedYear}
           selectedColumns={selectedColumns}
         />
-      ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.countryList}>
+      <List
+        width={1160}
+        height={295 * 4}
+        rowCount={filteredCountries.length}
+        rowHeight={295}
+        rowRenderer={rowRenderer}
+      />
     </div>
   );
 };
