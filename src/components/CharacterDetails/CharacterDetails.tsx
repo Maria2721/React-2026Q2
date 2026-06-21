@@ -1,0 +1,292 @@
+'use client';
+
+import { useAppDispatch } from '@/store/hooks';
+import { charactersApi, useGetCharacterByIdQuery } from '@/store/charactersApi';
+
+import { getErrorMessage } from '@/utils/getErrorMessage';
+
+type Props = {
+  characterId: string;
+  onClose: () => void;
+};
+
+function CloseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      className="w-5 h-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
+  );
+}
+
+export function CharacterDetails({ characterId, onClose }: Props) {
+  const dispatch = useAppDispatch();
+
+  const {
+    data: character,
+    isLoading,
+    error,
+  } = useGetCharacterByIdQuery(characterId);
+
+  const handleRefreshCharacter = () => {
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: characterId,
+        },
+      ])
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-6">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-red-500 bg-red-50 dark:text-red-200 dark:bg-red-900/20 p-3 rounded-lg">
+          {getErrorMessage(error)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!character) return null;
+
+  const statusStyles =
+    character.status === 'Alive'
+      ? 'bg-green-100 text-green-700 ring-green-200 dark:bg-green-500/10 dark:text-green-300 dark:ring-green-500/20'
+      : character.status === 'Dead'
+        ? 'bg-red-100 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20'
+        : 'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-500/10 dark:text-gray-300 dark:ring-gray-500/20';
+
+  const infoCards = [
+    {
+      label: 'Species',
+      value: character.species,
+      color:
+        'from-blue-500/10 to-cyan-500/10 border-blue-100 dark:border-blue-500/20',
+      text: 'text-blue-600 dark:text-blue-300',
+    },
+    {
+      label: 'Gender',
+      value: character.gender,
+      color:
+        'from-purple-500/10 to-pink-500/10 border-purple-100 dark:border-purple-500/20',
+      text: 'text-purple-600 dark:text-purple-300',
+    },
+    {
+      label: 'Origin',
+      value: character.origin?.name,
+      color:
+        'from-orange-500/10 to-yellow-500/10 border-orange-100 dark:border-orange-500/20',
+      text: 'text-orange-600 dark:text-orange-300',
+    },
+    {
+      label: 'Location',
+      value: character.location?.name,
+      color:
+        'from-emerald-500/10 to-green-500/10 border-emerald-100 dark:border-emerald-500/20',
+      text: 'text-emerald-600 dark:text-emerald-300',
+    },
+  ];
+
+  return (
+    <div
+      className="
+      relative overflow-hidden rounded-3xl border
+      bg-white shadow-sm border-black/10
+
+      dark:bg-gray-900/70 dark:border-gray-800 dark:shadow-black/40
+    "
+    >
+      <button
+        onClick={onClose}
+        aria-label="close"
+        className="
+          absolute top-5 right-5 z-20 flex items-center justify-center
+          w-10 h-10 rounded-full border backdrop-blur-sm
+          transition-all cursor-pointer
+
+          bg-white/90 border-gray-200 text-gray-500
+          hover:text-gray-900 hover:scale-105 hover:shadow-md
+
+          dark:bg-gray-800/60 dark:border-gray-700 dark:text-gray-300
+          dark:hover:text-white dark:hover:bg-gray-700
+        "
+      >
+        <CloseIcon />
+      </button>
+      <button
+        onClick={handleRefreshCharacter}
+        aria-label="refresh"
+        className="
+          absolute top-5 right-18 z-20
+          px-3 py-2 rounded-full
+          border backdrop-blur-sm
+          bg-white/90 border-gray-200
+          text-sm font-medium
+          transition-all
+          hover:scale-105
+          hover:shadow-md
+          cursor-pointer
+
+          dark:bg-gray-800/60
+          dark:border-gray-700
+          dark:text-gray-200
+        "
+      >
+        Refresh
+      </button>
+
+      <div className="relative z-10">
+        <div className="relative">
+          <img
+            src={character.image}
+            alt={character.name}
+            className="h-80 w-full object-cover"
+          />
+
+          <div
+            className="
+            absolute inset-0
+            bg-linear-to-t from-black/70 via-black/10 to-transparent
+          "
+          />
+
+          <div className="absolute bottom-0 left-0 w-full p-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="mb-2 text-sm uppercase tracking-[0.3em] text-white/70">
+                  Character Profile
+                </p>
+
+                <h2 className="text-4xl font-black text-white drop-shadow-sm">
+                  {character.name}
+                </h2>
+              </div>
+
+              <span
+                className={`
+                shrink-0 rounded-full px-4 py-2 text-sm font-semibold ring-1 backdrop-blur-sm
+                ${statusStyles}
+              `}
+              >
+                {character.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-1 w-14 rounded-full bg-linear-to-r from-blue-500 via-purple-500 to-pink-500" />
+
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+              Character Details
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {infoCards.map((card) => (
+              <div
+                key={card.label}
+                className={`
+                  group relative overflow-hidden rounded-2xl border p-5 shadow-sm
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+
+                  bg-white/90 border-gray-100
+                  dark:bg-gray-900/60 dark:border-gray-800
+
+                  bg-linear-to-br ${card.color}
+                `}
+              >
+                <div
+                  className="
+                  absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl
+                  bg-white/40 group-hover:scale-125 transition-transform duration-500
+                  dark:bg-white/5
+                "
+                />
+
+                <div className="relative">
+                  <p
+                    className={`
+                    text-xs uppercase tracking-[0.25em] font-semibold
+                    ${card.text}
+                  `}
+                  >
+                    {card.label}
+                  </p>
+
+                  <p className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-100 leading-snug">
+                    {card.value || 'Unknown'}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            <div
+              className="
+              relative overflow-hidden rounded-2xl border p-6 shadow-sm
+              sm:col-span-2 transition-all hover:shadow-lg
+
+              border-pink-100 bg-linear-to-br from-pink-500/10 to-rose-500/10
+              dark:border-pink-500/20 dark:from-pink-500/10 dark:to-rose-500/10
+              dark:bg-gray-900/60
+            "
+            >
+              <div
+                className="
+                absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl
+                bg-pink-200/40 dark:bg-pink-500/10
+              "
+              />
+
+              <div className="relative flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] font-semibold text-pink-600 dark:text-pink-300">
+                    Episodes
+                  </p>
+
+                  <h3 className="mt-2 text-3xl font-black text-gray-900 dark:text-gray-100">
+                    {character.episode?.length}
+                  </h3>
+
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    Total appearances in the series
+                  </p>
+                </div>
+
+                <div
+                  className="
+                  flex h-20 w-20 items-center justify-center rounded-2xl
+                  bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm shadow-inner
+                "
+                >
+                  <span className="text-3xl">🎬</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
