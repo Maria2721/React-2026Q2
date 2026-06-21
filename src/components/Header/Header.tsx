@@ -1,9 +1,12 @@
+'use client';
+
 import clsx from 'clsx';
-import { NavLink } from 'react-router';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-import { ThemeToggle } from '../../components/ThemeToggle/ThemeToggle';
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 
-const getLinkClass = ({ isActive }: { isActive: boolean }) =>
+const getLinkClass = (isActive: boolean) =>
   clsx(
     'relative text-base font-medium transition-all duration-200',
     'hover:text-indigo-500',
@@ -19,17 +22,19 @@ const getLinkClass = ({ isActive }: { isActive: boolean }) =>
   );
 
 export function Header() {
+  const pathname = usePathname();
+
   return (
     <header className="bg-white dark:bg-gray-800 transition-colors">
       <div className="mx-auto max-w-6xl flex items-center justify-between px-8 py-4">
         <nav className="flex items-center gap-6">
-          <NavLink to="/" className={getLinkClass}>
+          <Link href="/" className={getLinkClass(pathname === '/')}>
             Home
-          </NavLink>
+          </Link>
 
-          <NavLink to="/about" className={getLinkClass}>
+          <Link href="/about" className={getLinkClass(pathname === '/about')}>
             About
-          </NavLink>
+          </Link>
         </nav>
 
         <ThemeToggle />
