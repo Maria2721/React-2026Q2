@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2023"
-    ],
+    "lib": ["dom", "dom.iterable", "ES2023"],
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -17,9 +13,7 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -39,7 +33,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
