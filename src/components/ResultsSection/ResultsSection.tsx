@@ -1,5 +1,7 @@
-import { CharacterCard } from '../CharacterCard/CharacterCard';
+'use client';
 
+import { useTranslations } from 'next-intl';
+import { CharacterCard } from '../CharacterCard/CharacterCard';
 import type { ResultsProps } from '../../ts/interfaces';
 
 export function ResultsSection({
@@ -8,6 +10,8 @@ export function ResultsSection({
   error,
   onSelect,
 }: ResultsProps) {
+  const t = useTranslations('ResultsSection');
+
   const isEmpty = !loading && !error && results.length === 0;
   const hasResults = !loading && !error && results.length > 0;
 
@@ -21,7 +25,7 @@ export function ResultsSection({
     "
     >
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
-        📦 Results
+        📦 {t('title')}
       </h2>
 
       {loading && (
@@ -52,7 +56,7 @@ export function ResultsSection({
           text-gray-400 dark:text-gray-500
         "
         >
-          No results found
+          {t('isEmpty')}
         </div>
       )}
 

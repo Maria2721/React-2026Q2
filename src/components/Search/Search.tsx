@@ -1,10 +1,13 @@
+'use client';
+
 import { useState } from 'react';
 import clsx from 'clsx';
-
+import { useTranslations } from 'next-intl';
 import type { SearchProps } from '../../ts/interfaces';
 
 export function Search({ value, onChange, onSearch }: SearchProps) {
   const [isPressed, setIsPressed] = useState(false);
+  const t = useTranslations('SearchSection');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -45,7 +48,7 @@ export function Search({ value, onChange, onSearch }: SearchProps) {
         type="text"
         value={value}
         onChange={handleChange}
-        placeholder="Search anything..."
+        placeholder={t('placeholder')}
         className="
           flex-1 bg-transparent px-3 py-2
           text-gray-800 dark:text-gray-100
@@ -65,7 +68,7 @@ export function Search({ value, onChange, onSearch }: SearchProps) {
           isPressed && 'scale-[0.95] shadow-inner'
         )}
       >
-        Search
+        {t('title')}
       </button>
     </form>
   );

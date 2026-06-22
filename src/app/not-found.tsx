@@ -41,7 +41,7 @@ export default function NotFoundPage() {
         </p>
 
         <Link
-          href="/"
+          href="/en"
           className="
             mt-6 inline-flex items-center justify-center
             rounded-xl px-6 py-3 font-medium text-white
