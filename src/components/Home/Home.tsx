@@ -3,8 +3,6 @@
 import { useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-
 import { HomeTitle } from '@/components/HomeTitle/HomeTitle';
 import { SearchSection } from '@/components/SearchSection/SearchSection';
 import { ResultsSection } from '@/components/ResultsSection/ResultsSection';
@@ -20,13 +18,10 @@ export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const searchQuery = searchParams?.get('search') ?? '';
   const pageParam = searchParams?.get('page');
   const characterId = searchParams?.get('character');
-
   const page = Number(pageParam ?? 1) || 1;
-
-  const { value: searchQuery, setValue: setSearchQuery } =
-    useLocalStorage<string>('search', '');
 
   const [inputValue, setInputValue] = useState(searchQuery);
   const [crash, setCrash] = useState(false);
@@ -56,28 +51,33 @@ export default function Home() {
 
     if (trimmed === searchQuery) return;
 
-    setSearchQuery(trimmed);
-    router.replace('/?page=1');
-  }, [inputValue, searchQuery, setSearchQuery, router]);
+    router.replace(`/?search=${encodeURIComponent(trimmed)}&page=1`);
+  }, [inputValue, router, searchQuery]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
-      router.replace(`/?page=${page + 1}`);
+      router.replace(
+        `/?search=${encodeURIComponent(searchQuery)}&page=${page + 1}`
+      );
     }
   };
 
   const handlePrevPage = () => {
     if (page > 1) {
-      router.replace(`/?page=${page - 1}`);
+      router.replace(
+        `/?search=${encodeURIComponent(searchQuery)}&page=${page - 1}`
+      );
     }
   };
 
   const handleSelectCharacter = (id: number) => {
-    router.push(`/?page=${page}&character=${id}`);
+    router.push(
+      `/?search=${encodeURIComponent(searchQuery)}&page=${page}&character=${id}`
+    );
   };
 
   const handleCloseCharacter = () => {
-    router.replace(`/?page=${page}`);
+    router.replace(`/?search=${encodeURIComponent(searchQuery)}&page=${page}`);
   };
 
   if (crash) {
