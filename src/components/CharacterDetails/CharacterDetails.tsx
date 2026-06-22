@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useAppDispatch } from '@/store/hooks';
 import { charactersApi, useGetCharacterByIdQuery } from '@/store/charactersApi';
 
@@ -157,11 +159,16 @@ export function CharacterDetails({ characterId, onClose }: Props) {
 
       <div className="relative z-10">
         <div className="relative">
-          <img
-            src={character.image}
-            alt={character.name}
-            className="h-80 w-full object-cover"
-          />
+          <div className="relative h-80 w-full">
+            <Image
+              src={character.image || '/placeholder.png'}
+              alt={character.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 100vw"
+              className="object-cover"
+              priority
+            />
+          </div>
 
           <div
             className="
