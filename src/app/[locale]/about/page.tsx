@@ -1,9 +1,18 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import { useTranslations } from 'next-intl';
+export const dynamic = 'force-static';
 
-export default function AboutPage() {
-  const t = useTranslations('About');
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
+  const t = await getTranslations({
+    locale,
+    namespace: 'About',
+  });
 
   return (
     <section
@@ -25,25 +34,14 @@ export default function AboutPage() {
             {t('title')}
           </h1>
 
-          <p
-            className="
-            mb-6 text-base leading-relaxed text-indigo-100
-            dark:text-gray-300
-          "
-          >
+          <p className="mb-6 text-base leading-relaxed text-indigo-100 dark:text-gray-300">
             {t('subTitle')}
           </p>
         </div>
 
         <div className="p-10">
           <div className="mb-8 flex items-center gap-4">
-            <div
-              className="
-              flex h-20 w-20 items-center justify-center rounded-2xl
-              bg-indigo-100 text-indigo-700 text-3xl font-bold
-              dark:bg-indigo-500/10 dark:text-indigo-300
-            "
-            >
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700 text-3xl font-bold dark:bg-indigo-500/10 dark:text-indigo-300">
               M
             </div>
 
@@ -60,7 +58,6 @@ export default function AboutPage() {
 
           <div className="space-y-4 text-slate-600 dark:text-gray-300">
             <p>{t('created')}</p>
-
             <p>{t('desc')}</p>
           </div>
 
@@ -78,8 +75,7 @@ export default function AboutPage() {
                 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10
               "
             >
-              <span>🐙</span>
-              GitHub Profile
+              🐙 GitHub Profile
             </a>
 
             <a
@@ -92,26 +88,13 @@ export default function AboutPage() {
                 dark:bg-indigo-500/80 dark:hover:bg-indigo-500
               "
             >
-              <span>🎓</span>
-              RS School React Course
+              🎓 RS School React Course
             </a>
           </div>
 
-          <div
-            className="
-            mt-10 rounded-2xl border p-5
-            border-slate-100 bg-slate-50
-            dark:border-gray-800 dark:bg-gray-800/40
-          "
-          >
-            <div
-              className="
-              mb-2 flex items-center gap-2 text-sm font-semibold
-              text-slate-800 dark:text-gray-200
-            "
-            >
-              <span>🌐</span>
-              Technologies Used
+          <div className="mt-10 rounded-2xl border p-5 border-slate-100 bg-slate-50 dark:border-gray-800 dark:bg-gray-800/40">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-gray-200">
+              🌐 Technologies Used
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -125,11 +108,7 @@ export default function AboutPage() {
               ].map((tech) => (
                 <span
                   key={tech}
-                  className="
-                    rounded-full px-3 py-1 text-sm shadow-sm
-                    bg-white text-slate-700
-                    dark:bg-gray-700/50 dark:text-gray-200
-                  "
+                  className="rounded-full px-3 py-1 text-sm shadow-sm bg-white text-slate-700 dark:bg-gray-700/50 dark:text-gray-200"
                 >
                   {tech}
                 </span>
