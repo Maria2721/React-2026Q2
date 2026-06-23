@@ -1,9 +1,13 @@
+'use client';
+
 import clsx from 'clsx';
-import { NavLink } from 'react-router';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
 
-import { ThemeToggle } from '../../components/ThemeToggle/ThemeToggle';
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
+import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 
-const getLinkClass = ({ isActive }: { isActive: boolean }) =>
+const getLinkClass = (isActive: boolean) =>
   clsx(
     'relative text-base font-medium transition-all duration-200',
     'hover:text-indigo-500',
@@ -19,20 +23,29 @@ const getLinkClass = ({ isActive }: { isActive: boolean }) =>
   );
 
 export function Header() {
+  const pathname = usePathname();
+  const t = useTranslations('Header');
+
+  const isHome = pathname === '/';
+  const isAbout = pathname === '/about';
+
   return (
     <header className="bg-white dark:bg-gray-800 transition-colors">
       <div className="mx-auto max-w-6xl flex items-center justify-between px-8 py-4">
         <nav className="flex items-center gap-6">
-          <NavLink to="/" className={getLinkClass}>
-            Home
-          </NavLink>
+          <Link href="/" className={getLinkClass(isHome)}>
+            {t('home')}
+          </Link>
 
-          <NavLink to="/about" className={getLinkClass}>
-            About
-          </NavLink>
+          <Link href="/about" className={getLinkClass(isAbout)}>
+            {t('about')}
+          </Link>
         </nav>
 
-        <ThemeToggle />
+        <div className="flex items-center">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="h-0.5 w-full bg-linear-to-r from-blue-400 via-purple-400 to-pink-400" />

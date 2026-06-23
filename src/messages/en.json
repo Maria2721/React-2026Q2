@@ -1,0 +1,46 @@
+{
+  "Header": {
+    "home": "Home",
+    "about": "About"
+  },
+  "Home": {
+    "title": "Rick & Morty Character Explorer",
+    "subTitle": "Find and explore characters instantly",
+    "refresh": "Refresh List",
+    "error": "Test Error"
+  },
+  "SearchSection": {
+    "title": "Search",
+    "placeholder": "Search anything..."
+  },
+  "ResultsSection": {
+    "title": "Results",
+    "isEmpty": "No results found"
+  },
+  "SelectedFlyout": {
+    "title": "Selected characters",
+    "character": "character selected",
+    "characters": "characters selected",
+    "unselect": "Unselect all",
+    "download": "Download CSV"
+  },
+  "About": {
+    "title": "Rick & Morty Character Explorer",
+    "subTitle": "A React application for searching and exploring characters from the Rick & Morty universe.",
+    "name": "Maria Ivanova",
+    "developer": "Frontend Developer",
+    "created": "This project was created as part of the RS School React course.",
+    "desc": "The application demonstrates routing, API interaction, reusable components, state management, testing and responsive UI development."
+  },
+  "Error": {
+    "errorTitle": "Something went wrong",
+    "errorDescription": "An unexpected error occurred. You can try to reload the page state.",
+    "tryAgain": "Try again"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you’re looking for doesn’t exist or has been moved.",
+    "backHome": "Go back home",
+    "hint": "Check the URL or return to the main application"
+  }
+}

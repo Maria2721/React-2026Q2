@@ -7,7 +7,7 @@ import {
   transformCharactersResponse,
 } from './charactersApi.helpers';
 
-const cacheTTL = Number(import.meta.env.VITE_CACHE_TTL ?? 60);
+const cacheTTL = Number(process.env.NEXT_CACHE_TTL ?? 60);
 
 export const charactersApi = createApi({
   reducerPath: 'charactersApi',

@@ -1,16 +1,15 @@
-import { useOutletContext } from 'react-router';
+'use client';
 
-import {
-  charactersApi,
-  useGetCharacterByIdQuery,
-} from '../../store/charactersApi';
-import { useAppDispatch } from '../../store/hooks';
+import Image from 'next/image';
 
-import { getErrorMessage } from '../../utils/getErrorMessage';
+import { useAppDispatch } from '@/store/hooks';
+import { charactersApi, useGetCharacterByIdQuery } from '@/store/charactersApi';
 
-type Context = {
-  detailsId: string;
-  closeDetails: () => void;
+import { getErrorMessage } from '@/utils/getErrorMessage';
+
+type Props = {
+  characterId: string;
+  onClose: () => void;
 };
 
 function CloseIcon() {
@@ -32,21 +31,21 @@ function CloseIcon() {
   );
 }
 
-export default function CharacterDetailsPage() {
-  const { detailsId, closeDetails } = useOutletContext<Context>();
+export function CharacterDetails({ characterId, onClose }: Props) {
+  const dispatch = useAppDispatch();
+
   const {
     data: character,
     isLoading,
     error,
-  } = useGetCharacterByIdQuery(detailsId);
+  } = useGetCharacterByIdQuery(characterId);
 
-  const dispatch = useAppDispatch();
   const handleRefreshCharacter = () => {
     dispatch(
       charactersApi.util.invalidateTags([
         {
           type: 'Character',
-          id: detailsId,
+          id: characterId,
         },
       ])
     );
@@ -120,7 +119,7 @@ export default function CharacterDetailsPage() {
     "
     >
       <button
-        onClick={closeDetails}
+        onClick={onClose}
         aria-label="close"
         className="
           absolute top-5 right-5 z-20 flex items-center justify-center
@@ -160,11 +159,16 @@ export default function CharacterDetailsPage() {
 
       <div className="relative z-10">
         <div className="relative">
-          <img
-            src={character.image}
-            alt={character.name}
-            className="h-80 w-full object-cover"
-          />
+          <div className="relative h-80 w-full">
+            <Image
+              src={character.image || '/placeholder.png'}
+              alt={character.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 100vw"
+              className="object-cover"
+              priority
+            />
+          </div>
 
           <div
             className="

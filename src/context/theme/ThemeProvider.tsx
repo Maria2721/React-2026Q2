@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { ThemeContext } from './ThemeContext';
@@ -8,10 +10,14 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') return 'light';
+
+  return (localStorage.getItem('theme') as Theme) ?? 'light';
+}
+
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
-  });
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

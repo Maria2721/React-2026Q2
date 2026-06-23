@@ -1,35 +1,33 @@
-import { useState, useCallback } from 'react';
-import { useSearchParams, useNavigate, Outlet } from 'react-router';
+'use client';
 
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useCallback, useState } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
-import { HomeTitle } from '../../components/HomeTitle/HomeTitle';
-import { SearchSection } from '../../components/SearchSection/SearchSection';
-import { ResultsSection } from '../../components/ResultsSection/ResultsSection';
-import { Pagination } from '../../components/Pagination/Pagination';
-import { SelectedFlyout } from '../../components/SelectedFlyout/SelectedFlyout';
+import { HomeTitle } from '@/components/HomeTitle/HomeTitle';
+import { SearchSection } from '@/components/SearchSection/SearchSection';
+import { ResultsSection } from '@/components/ResultsSection/ResultsSection';
+import { Pagination } from '@/components/Pagination/Pagination';
+import { SelectedFlyout } from '@/components/SelectedFlyout/SelectedFlyout';
+import { CharacterDetails } from '@/components/CharacterDetails/CharacterDetails';
 
-import {
-  charactersApi,
-  useGetCharactersQuery,
-} from '../../store/charactersApi';
+import { charactersApi, useGetCharactersQuery } from '@/store/charactersApi';
+import { useAppDispatch } from '@/store/hooks';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
-import { useAppDispatch } from '../../store/hooks';
+export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const t = useTranslations('Home');
 
-import { getErrorMessage } from '../../utils/getErrorMessage';
-
-export default function HomePage() {
-  const { value: searchQuery, setValue: setSearchQuery } =
-    useLocalStorage<string>('search', '');
+  const searchQuery = searchParams?.get('search') ?? '';
+  const pageParam = searchParams?.get('page');
+  const characterId = searchParams?.get('character');
+  const page = Number(pageParam ?? 1) || 1;
 
   const [inputValue, setInputValue] = useState(searchQuery);
   const [crash, setCrash] = useState(false);
-
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const page = Number(searchParams.get('page') || 1);
-  const detailsId = searchParams.get('details');
 
   const { data, isLoading, isFetching, error } = useGetCharactersQuery({
     query: searchQuery,
@@ -51,41 +49,67 @@ export default function HomePage() {
     setInputValue(value);
   }, []);
 
+  const navigate = useCallback(
+    (params: {
+      search?: string | null;
+      page?: number | null;
+      character?: string | number | null;
+    }) => {
+      const query: Record<string, string> = {};
+
+      if (params.search) query.search = params.search;
+      if (params.page) query.page = String(params.page);
+      if (params.character) query.character = String(params.character);
+
+      router.replace({ pathname: '/', query });
+    },
+    [router]
+  );
+
   const handleSearch = useCallback(() => {
     const trimmed = inputValue.trim();
 
     if (trimmed === searchQuery) return;
 
-    setSearchQuery(trimmed);
-    setSearchParams({ page: '1' });
-  }, [inputValue, searchQuery, setSearchParams, setSearchQuery]);
+    navigate({
+      search: trimmed,
+      page: 1,
+      character: null,
+    });
+  }, [inputValue, searchQuery, navigate]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
-      setSearchParams({ page: String(page + 1) });
+      navigate({
+        search: searchQuery,
+        page: page + 1,
+      });
     }
   };
 
   const handlePrevPage = () => {
     if (page > 1) {
-      setSearchParams({ page: String(page - 1) });
+      navigate({
+        search: searchQuery,
+        page: page - 1,
+      });
     }
   };
 
   const handleSelectCharacter = (id: number) => {
-    const page = searchParams.get('page') || '1';
-
-    setSearchParams({ page, details: String(id) });
-
-    navigate(`character/${id}?page=${page}&details=${id}`);
+    navigate({
+      search: searchQuery,
+      page,
+      character: id,
+    });
   };
 
-  const closeDetails = () => {
-    const params = new URLSearchParams(searchParams);
-    params.delete('details');
-
-    setSearchParams(params);
-    navigate('/');
+  const handleCloseCharacter = () => {
+    navigate({
+      search: searchQuery,
+      page,
+      character: null,
+    });
   };
 
   if (crash) {
@@ -99,7 +123,7 @@ export default function HomePage() {
       <div className="flex gap-6">
         <div
           className={
-            detailsId
+            characterId
               ? 'w-1/2 flex flex-col gap-6'
               : 'w-full flex flex-col gap-6'
           }
@@ -115,7 +139,7 @@ export default function HomePage() {
               onClick={handleRefreshList}
               className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
             >
-              Refresh List
+              {t('refresh')}
             </button>
           </div>
 
@@ -140,14 +164,17 @@ export default function HomePage() {
               onClick={() => setCrash(true)}
               className="px-5 py-2 rounded-xl font-medium text-white transition bg-linear-to-r from-purple-400 to-pink-400 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.95] cursor-pointer"
             >
-              Test Error
+              {t('error')}
             </button>
           </div>
         </div>
 
-        {detailsId && (
-          <div className="border-l pl-6 w-1/2 min-h-full">
-            <Outlet context={{ detailsId, closeDetails }} />
+        {characterId && (
+          <div className="pl-6 w-1/2 min-h-full">
+            <CharacterDetails
+              characterId={characterId}
+              onClose={handleCloseCharacter}
+            />
           </div>
         )}
       </div>

@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearSelected } from '../../store/selectedSlice';
 
@@ -5,6 +9,7 @@ import { generateCSV } from '../../utils/generateCSV';
 import { downloadCSV } from '../../utils/downloadCSV';
 
 export function SelectedFlyout() {
+  const t = useTranslations('SelectedFlyout');
   const dispatch = useAppDispatch();
 
   const selectedItems = useAppSelector((state) => state.selected.items);
@@ -51,14 +56,12 @@ export function SelectedFlyout() {
 
           <div>
             <p className="text-md font-semibold text-gray-900 dark:text-gray-100">
-              Selected characters
+              {t('title')}
             </p>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {selectedItems.length}{' '}
-              {selectedItems.length === 1
-                ? 'character selected'
-                : 'characters selected'}
+              {selectedItems.length === 1 ? t('character') : t('characters')}
             </p>
           </div>
         </div>
@@ -78,7 +81,7 @@ export function SelectedFlyout() {
               dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-300
             "
           >
-            Unselect all
+            {t('unselect')}
           </button>
 
           <button
@@ -92,7 +95,7 @@ export function SelectedFlyout() {
               hover:scale-[1.02] hover:shadow-lg active:scale-[0.97]
             "
           >
-            Download CSV
+            {t('download')}
           </button>
         </div>
       </div>
